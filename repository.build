@@ -1,0 +1,93 @@
+<project name="Public Bots/Indicators" default="help">
+
+  <property name="MSBuildDir"		    value="C:\Program Files (x86)\MSBuild\14.0\Bin\amd64\"		unless="${property::exists('MSBuildDir')}" />
+
+  <tstamp property="Date"		          pattern="yyyy-MM-dd"						            unless="${property::exists('Date')}" />
+  <property name="Build"		          value="0.0.0.0"						                  unless="${property::exists('Build')}" />
+  <property name="Configuration"	    value="Release"							                unless="${property::exists('Configuration')}" />
+
+  <property name="SourcesDir"	        value=".\"				                          unless="${property::exists('SourcesDir')}" />
+  <property name="SolutionFolder"		  value="${SourcesDir}src\" />
+  <property name="SolutionFile"		    value="Repository.Public.sln"					    unless="${property::exists('SolutionFile')}" />
+  <property name="ToolsFolder"	      value="${SourcesDir}tools\"  />
+  
+  <property name="OutputFolder"        value="${SourcesDir}build.ouput\" />
+  <property name="ProjectsToPackage"  value="SoftFx.PublicIndicators" />
+
+  <target name="help">
+    <echo message="Use: nant.exe buildfile:repository.build [Build|Clean]"/>
+  </target>
+
+  <target name="Build" >
+    <property name="Build.Target" value="Build" />
+    <call target="PrepareFolders" />
+    <call target="CleanUpFolder" />
+    <call target="RunMSBuild" />
+    <call target="CreatePackages" />
+  </target>
+
+  <target name="Clean" >
+    <property name="Build.Target" value="Clean" />
+    <call target="PrepareFolders" />
+    <call target="RunMSBuild" />
+    <call target="CleanUpFolder" />
+  </target>
+
+  <target name="CreatePackages">
+    <foreach item="String" in="${ProjectsToPackage}" delim="," property="Package.ProjectFolder">
+      <call target="CreateAlgoPackage"/>
+    </foreach>
+  </target>
+
+  <target name="PrepareFolders">
+    <mkdir dir="${OutputFolder}" />
+  </target>
+
+  <target name="RunMSBuild">
+
+    <property name="MSBuild.SourcesDir" value="${SolutionFolder}" />
+    <property name="MSBuild.SolutionFile" value="${SolutionFolder}${SolutionFile}" />
+    <property name="MSBuild.Target" value="${Build.Target}" />
+    <property name="MSBuild.Output" value="${OutputFolder}BotTerminal.build-${Configuration}.log" />
+    <property name="MSBuild.Configuration" value="${Configuration}" />
+    <property name="MSBuild.Platform" value="Any CPU" />
+
+    <exec program="${MSBuildDir}msbuild.exe" >
+      <arg value="${MSBuild.SolutionFile}" />
+      <arg value="/t:${MSBuild.Target}" />
+      <arg value="/maxcpucount" />
+      <arg value="/fl" />
+      <arg value="/flp:Verbosity=Normal;LogFile=${MSBuild.Output}" />
+      <arg value="/clp:NoItemAndPropertyList" />
+      <arg value="/verbosity:n" />
+      <arg value="/nologo" />
+      <arg value="/p:Configuration=${MSBuild.Configuration}" />
+      <arg value="/p:Platform=${MSBuild.Platform}" />
+      <arg value="/p:SolutionDir=${MSBuild.SourcesDir}" />
+      <arg value="/p:ApplicationVersion=${Build}" />
+    </exec>
+
+  </target>
+
+  <target name="CleanUpFolder">
+    <delete>
+      <fileset basedir="${OutputFolder}">
+        <include name="*.ttalgo" />
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="CreateAlgoPackage">
+    <exec program="${ToolsFolder}CmdUtil.exe">
+      <arg value="build" />
+      <arg value="path=${SolutionFolder}${Package.ProjectFolder}\bin\${Configuration}"/>
+      <arg value="main=${Package.ProjectFolder}.dll"/>
+      <arg value="runtime=.NETFramework,Version=v4.5.2" />
+      <arg value="ide=VS14.0" />
+      <arg value="project=${SolutionFolder}${Package.ProjectFolder}\${Package.ProjectFolder}.cs" />
+      <arg value="workspace=${SolutionFolder}${SolutionFile}" />
+      <arg value="output=${OutputFolder}" />
+    </exec>
+  </target>
+
+</project>
