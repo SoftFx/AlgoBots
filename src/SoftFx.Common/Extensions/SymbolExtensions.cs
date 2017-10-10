@@ -144,5 +144,14 @@ namespace SoftFx.Common.Extensions
                     return double.NaN;
             }
         }
+
+        /// <summary>
+        /// Returns best bid or best ask according to side
+        /// </summary>
+        /// <returns>Best price</returns>
+        public static double BestPrice(this Symbol symbol, OrderSide side)
+        {
+            return side == OrderSide.Buy ? symbol.Ask : symbol.Bid;
+        }
     }
 }

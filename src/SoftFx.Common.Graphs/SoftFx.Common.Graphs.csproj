@@ -46,6 +46,7 @@
     <Compile Include="Algorithm\BellmanFord.cs" />
     <Compile Include="Algorithm\PathLogic.cs" />
     <Compile Include="Algorithm\PathSearchResult.cs" />
+    <Compile Include="BarMarketGraph.cs" />
     <Compile Include="GraphBase.cs" />
     <Compile Include="MarketGraph.cs" />
     <Compile Include="Path.cs" />

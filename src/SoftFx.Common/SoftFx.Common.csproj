@@ -43,6 +43,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Adapters\BookEntryAdapter.cs" />
+    <Compile Include="Adapters\QuoteAdapter.cs" />
+    <Compile Include="BusinessObjects\BarSymbol.cs" />
     <Compile Include="CommonConstants.cs" />
     <Compile Include="Extensions\FormattingExtensions.cs" />
     <Compile Include="Extensions\ParsingExtensions.cs" />
