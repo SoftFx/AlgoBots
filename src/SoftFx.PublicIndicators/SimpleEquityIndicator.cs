@@ -8,7 +8,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace SoftFx.PublicIndicators
 {
-    [Indicator(DisplayName = "Simple Equity Indicator", Category = CommonConstants.Category, Version = "1.1")]
+    [Indicator(DisplayName = "Simple Equity Indicator", Category = CommonConstants.Category, Version = "1.2")]
     public class SimpleEquityIndicator : Indicator
     {
         private BarMarketGraph _symbolGraph;
@@ -56,10 +56,9 @@ namespace SoftFx.PublicIndicators
                 foreach (var asset in Account.Assets)
                 {
                     var node = _symbolGraph[asset.Currency];
-                    if (node != null && !searchResult.Distance[node.Id].E(_pathLogic.UnreachableValue))
-                    {
-                        res += asset.Volume * Math.Exp(-searchResult.Distance[node.Id]);
-                    }
+                    res += (node != null && !searchResult.Distance[node.Id].E(_pathLogic.UnreachableValue))
+                        ? asset.Volume * Math.Exp(-searchResult.Distance[node.Id])
+                        : double.NaN;
                 }
             }
 

@@ -4,10 +4,11 @@ using SoftFx.Common.Graphs;
 using SoftFx.Common.Graphs.Algorithm;
 using System.Collections.Generic;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 
 namespace SoftFx.PublicIndicators
 {
-    [Indicator(DisplayName = "Universal Currency Indicator", Category = CommonConstants.Category, Version = "1.1")]
+    [Indicator(DisplayName = "Universal Currency Indicator", Category = CommonConstants.Category, Version = "1.2")]
     public class UniversalCurrencyIndicator : Indicator
     {
         private BarMarketGraph _symbolGraph;
@@ -68,7 +69,9 @@ namespace SoftFx.PublicIndicators
                 res = 0;
                 foreach (var nodeId in _currencyListIds)
                 {
-                    res += -searchResult.Distance[nodeId];
+                    res += !searchResult.Distance[nodeId].E(_pathLogic.UnreachableValue)
+                        ? -searchResult.Distance[nodeId]
+                        : double.NaN;
                 }
             }
 
