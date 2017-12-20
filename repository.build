@@ -12,7 +12,7 @@
   <property name="ToolsFolder"	      value="${SourcesDir}tools\"  />
   
   <property name="OutputFolder"        value="${SourcesDir}build.ouput\" />
-  <property name="ProjectsToPackage"  value="SoftFx.PublicIndicators" />
+  <property name="ProjectsToPackage"  value="SoftFx.PublicIndicators,SoftFx.PublicBots" />
 
   <target name="help">
     <echo message="Use: nant.exe buildfile:repository.build [Build|Clean]"/>
