@@ -38,8 +38,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.Algo.Api, Version=1.0.19.0, Culture=neutral, PublicKeyToken=90b5c26c2d37a2da, processorArchitecture=MSIL">
-      <HintPath>..\packages\TickTrader.Algo.Api.1.0.19\lib\net45\TickTrader.Algo.Api.dll</HintPath>
+    <Reference Include="TickTrader.Algo.Api, Version=1.0.25.0, Culture=neutral, PublicKeyToken=90b5c26c2d37a2da, processorArchitecture=MSIL">
+      <HintPath>..\packages\TickTrader.Algo.Api.1.0.25\lib\net45\TickTrader.Algo.Api.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -54,13 +54,13 @@
     <Compile Include="SparseGraph.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\SoftFx.Common\SoftFx.Common.csproj">
       <Project>{a0d8c046-fe2e-44b6-98d0-269d7587d8f0}</Project>
       <Name>SoftFx.Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

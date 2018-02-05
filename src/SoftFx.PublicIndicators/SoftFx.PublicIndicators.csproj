@@ -44,14 +44,14 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.Algo.Api, Version=1.0.19.0, Culture=neutral, PublicKeyToken=90b5c26c2d37a2da, processorArchitecture=MSIL">
-      <HintPath>..\packages\TickTrader.Algo.Api.1.0.19\lib\net45\TickTrader.Algo.Api.dll</HintPath>
+    <Reference Include="TickTrader.Algo.Api, Version=1.0.25.0, Culture=neutral, PublicKeyToken=90b5c26c2d37a2da, processorArchitecture=MSIL">
+      <HintPath>..\packages\TickTrader.Algo.Api.1.0.25\lib\net45\TickTrader.Algo.Api.dll</HintPath>
     </Reference>
     <Reference Include="TickTrader.SeriesStorage">
-      <HintPath>..\packages\TickTrader.SeriesStorage\TickTrader.SeriesStorage.dll</HintPath>
+      <HintPath>..\..\lib\TickTrader.SeriesStorage.dll</HintPath>
     </Reference>
     <Reference Include="TickTrader.SeriesStorage.LevelDb">
-      <HintPath>..\packages\TickTrader.SeriesStorage.LevelDb\TickTrader.SeriesStorage.LevelDb.dll</HintPath>
+      <HintPath>..\..\lib\TickTrader.SeriesStorage.LevelDb.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
