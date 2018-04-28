@@ -2,7 +2,7 @@
 
 namespace SoftFx.Common.Adapters
 {
-    public class BookEntryAdapter : BookEntry
+    public class BookEntryAdapter
     {
         public double Price { get; }
 

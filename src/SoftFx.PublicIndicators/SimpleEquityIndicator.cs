@@ -8,7 +8,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace SoftFx.PublicIndicators
 {
-    [Indicator(DisplayName = "Simple Equity Indicator", Category = CommonConstants.Category, Version = "1.2")]
+    [Indicator(DisplayName = "Simple Equity Indicator", Category = CommonConstants.Category, Version = "1.3")]
     public class SimpleEquityIndicator : Indicator
     {
         private BarMarketGraph _symbolGraph;

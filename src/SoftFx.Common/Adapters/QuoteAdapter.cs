@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 
 namespace SoftFx.Common.Adapters
 {
-    public class QuoteAdapter : Quote
+    public class QuoteAdapter
     {
         public string Symbol { get; set; }
 
@@ -14,9 +14,9 @@ namespace SoftFx.Common.Adapters
 
         public double Bid { get; set; }
 
-        public BookEntry[] AskBook { get; set; }
+        public BookEntryAdapter[] AskBook { get; set; }
 
-        public BookEntry[] BidBook { get; set; }
+        public BookEntryAdapter[] BidBook { get; set; }
 
 
         public QuoteAdapter() { }

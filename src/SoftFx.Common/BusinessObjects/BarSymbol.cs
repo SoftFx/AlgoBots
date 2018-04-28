@@ -1,16 +1,26 @@
-﻿using SoftFx.Common.Adapters;
+﻿using SoftFx.Common.Extensions;
 using System;
 using TickTrader.Algo.Api;
 
 namespace SoftFx.Common.BusinessObjects
 {
-    public class BarSymbol : Symbol
+    public class BarSymbol
     {
         public Symbol ApiSymbol { get; }
 
         public BarSeries BidBars { get; }
 
         public BarSeries AskBars { get; }
+
+        public string Name => ApiSymbol.Name;
+
+        public string BaseCurrency => ApiSymbol.BaseCurrency;
+
+        public string CounterCurrency => ApiSymbol.CounterCurrency;
+
+        public double Bid => BidBars[0].Close;
+
+        public double Ask => AskBars[0].Close;
 
 
         public BarSymbol(string symbol, AlgoPlugin plugin) : this(plugin.Symbols[symbol], plugin) { }
@@ -35,62 +45,14 @@ namespace SoftFx.Common.BusinessObjects
                 : !BidBars[0].IsNull && !double.IsNaN(Bid);
         }
 
-
-        #region Symbol implementation
-
-        public string Name => ApiSymbol.Name;
-
-        public int Digits => ApiSymbol.Digits;
-
-        public double Point => ApiSymbol.Point;
-
-        public double ContractSize => ApiSymbol.ContractSize;
-
-        public double MaxTradeVolume => ApiSymbol.MaxTradeVolume;
-
-        public double MinTradeVolume => ApiSymbol.MinTradeVolume;
-
-        public double TradeVolumeStep => ApiSymbol.TradeVolumeStep;
-
-        public bool IsTradeAllowed => ApiSymbol.IsTradeAllowed;
-
-        public bool IsNull => ApiSymbol.IsNull;
-
-        public string BaseCurrency => ApiSymbol.BaseCurrency;
-
-        public Currency BaseCurrencyInfo => ApiSymbol.BaseCurrencyInfo;
-
-        public string CounterCurrency => ApiSymbol.CounterCurrency;
-
-        public Currency CounterCurrencyInfo => ApiSymbol.CounterCurrencyInfo;
-
-        public double Bid => BidBars[0].Close;
-
-        public double Ask => AskBars[0].Close;
-
-        public Quote LastQuote => new QuoteAdapter(Name, BidBars[0], AskBars[0]);
-
-        public double Commission => ApiSymbol.Commission;
-
-        public double LimitsCommission => ApiSymbol.LimitsCommission;
-
-        public CommissionChargeMethod CommissionChargeMethod => ApiSymbol.CommissionChargeMethod;
-
-        public CommissionChargeType CommissionChargeType => ApiSymbol.CommissionChargeType;
-
-        public CommissionType CommissionType => ApiSymbol.CommissionType;
-
-
-        public void Subscribe(int depth = 1)
+        public double BestPrice(OrderSide side)
         {
-            throw new NotImplementedException();
+            return side == OrderSide.Buy ? Ask : Bid;
         }
 
-        public void Unsubscribe()
+        public double RoundPrice(double price, OrderSide side, int extraDigits = 0)
         {
-            throw new NotImplementedException();
+            return ApiSymbol.RoundPrice(price, side, extraDigits);
         }
-
-        #endregion Symbol implementation
     }
 }

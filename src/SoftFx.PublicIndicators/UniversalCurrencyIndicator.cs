@@ -8,7 +8,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace SoftFx.PublicIndicators
 {
-    [Indicator(DisplayName = "Universal Currency Indicator", Category = CommonConstants.Category, Version = "1.2")]
+    [Indicator(DisplayName = "Universal Currency Indicator", Category = CommonConstants.Category, Version = "1.3")]
     public class UniversalCurrencyIndicator : Indicator
     {
         private BarMarketGraph _symbolGraph;
