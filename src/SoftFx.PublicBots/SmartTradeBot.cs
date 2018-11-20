@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
-namespace SmartTradeBot
+namespace SoftFx.SmartTradeBot
 {
-    [TradeBot(Category = "SoftFX Private", DisplayName = "SmartTradeBot", Version = "1.0")]
+    [TradeBot(DisplayName = "SmartTradeBot", Category = CommonConstants.Category, Version = "1.0")]
     public class SmartTradeBot : TradeBot
     {
         [Parameter(DisplayName = "Volume", DefaultValue = 1)]

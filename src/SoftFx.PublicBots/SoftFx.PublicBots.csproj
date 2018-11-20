@@ -50,6 +50,12 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SoftFx.Common\SoftFx.Common.csproj">
+      <Project>{A0D8C046-FE2E-44B6-98D0-269D7587D8F0}</Project>
+      <Name>SoftFx.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
