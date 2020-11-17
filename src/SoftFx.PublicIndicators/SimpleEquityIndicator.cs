@@ -49,7 +49,7 @@ namespace SoftFx.PublicIndicators
             _lastSearchTime = DateTime.Now - _delay -_delay;
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var res = double.NaN;
             if (_currencyId != -1 && Account.Type == AccountTypes.Cash)

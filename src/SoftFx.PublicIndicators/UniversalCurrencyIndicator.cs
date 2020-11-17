@@ -64,7 +64,7 @@ namespace SoftFx.PublicIndicators
 
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var res = double.NaN;
             if (_currencyId != -1)

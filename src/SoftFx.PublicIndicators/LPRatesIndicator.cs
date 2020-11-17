@@ -130,16 +130,16 @@ namespace SoftFx.PublicIndicators
         private readonly static IKeySerializer<DateTime> _keySerializer = new DateTimeKeySerializer();
         private readonly DateTime _startTime = DateTime.Now.ToUniversalTime();
         private string _dbPath;
-        private bool _isPreviousBarsProccessed = false;
+        private bool _isHistoryBarsProcessed = false;
 
-        protected override async void Calculate()
+        protected override async void Calculate(bool isNewBar)
         {
-            var isPreviousBar = _startTime > Bars[0].CloseTime;
-            if ( isPreviousBar || IsUpdate )
+            var isHistoryBar = _startTime > Bars[0].CloseTime;
+            if ( isHistoryBar || isNewBar )
                 return;
 
-            if (!_isPreviousBarsProccessed && EnableRestoring)
-                ProcessPreviousBars();
+            if (!_isHistoryBarsProcessed && EnableRestoring)
+                ProcessHistoryBars();
             else
                 await ProcessCurrentBar();
             
@@ -251,7 +251,7 @@ namespace SoftFx.PublicIndicators
             return new double[] { bid, ask };
         }
 
-        private void ProcessPreviousBars()
+        private void ProcessHistoryBars()
         {
             using (var storage = new LevelDbStorage(_dbPath))
             {
@@ -296,7 +296,7 @@ namespace SoftFx.PublicIndicators
                 }
             }
 
-            _isPreviousBarsProccessed = true;
+            _isHistoryBarsProcessed = true;
         }
 
         private async Task ProcessCurrentBar()
