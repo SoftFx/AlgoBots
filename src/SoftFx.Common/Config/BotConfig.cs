@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace SoftFX
+namespace SoftFx
 {
     public interface IConfig
     {

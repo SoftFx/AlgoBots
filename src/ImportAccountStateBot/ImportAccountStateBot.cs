@@ -1,4 +1,4 @@
-﻿using SoftFX.Routines;
+﻿using SoftFx.Routines;
 using SoftFx;
 using System;
 using System.Threading.Tasks;

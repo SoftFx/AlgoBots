@@ -1,4 +1,4 @@
-﻿using SoftFX;
+﻿using SoftFx;
 using System.Text;
 
 namespace ImportAccountStateBot

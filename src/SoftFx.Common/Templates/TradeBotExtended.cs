@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 
-namespace SoftFX.Routines
+namespace SoftFx.Routines
 {
     /// <summary>
     /// Possible bot states

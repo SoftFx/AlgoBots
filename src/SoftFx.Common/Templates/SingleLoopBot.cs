@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace SoftFX.Routines
+namespace SoftFx.Routines
 {
     /// <summary>
     /// Extends TradeBot with some common functionality, adds iteration routine
