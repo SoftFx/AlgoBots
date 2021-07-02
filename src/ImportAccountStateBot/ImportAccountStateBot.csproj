@@ -6,14 +6,13 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectTypeGuids>{74F46FEE-74DF-49D2-A1A3-F634C4CE65AE};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <ProjectGuid>{CD389035-D184-4148-AF7D-0A3E81601FBB}</ProjectGuid>
+    <ProjectGuid>{7CD0A51C-EBC6-4308-AE97-6751E316D23D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SoftFx.PublicBots</RootNamespace>
-    <AssemblyName>SoftFx.PublicBots</AssemblyName>
+    <RootNamespace>ImportAccountStateBot</RootNamespace>
+    <AssemblyName>ImportAccountStateBot</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -47,8 +46,26 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SmartTradeBot.cs" />
+    <Compile Include="AccountStateMachine\AccountState.cs" />
+    <Compile Include="AccountStateFileParser.cs" />
+    <Compile Include="AccountStateMachine\AccountStateMachine.cs" />
+    <Compile Include="AccountStateMachine\TransactionToken.cs" />
+    <Compile Include="Config\CSVFileConfig.cs" />
+    <Compile Include="Config\ImportAccountStateBotConfig.cs" />
+    <Compile Include="Config\ImportModesConfigs.cs" />
+    <Compile Include="Extensions\StringBuilderExtensions.cs" />
+    <Compile Include="ImportAccountStateBot.cs" />
+    <Compile Include="AccountStateMachine\PositionState.cs" />
+    <Compile Include="OrderWatcher\MarketModeWatcher.cs" />
+    <Compile Include="OrderWatcher\OrdersWatcherManager.cs" />
+    <Compile Include="OrderWatcher\OrderBaseWatcher.cs" />
+    <Compile Include="OrderWatcher\TralingLimitModeWatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="README.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SoftFx.Common\SoftFx.Common.csproj">
