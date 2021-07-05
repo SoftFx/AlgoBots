@@ -1,23 +1,27 @@
-﻿MovingAverageBot.v.2
+﻿MovingAverageBot
 ===
 
 ## Idea
-This bot does smth awesome
+The bot opens a trade when the price crosses the MA. The volume of the lot count as:
 
+    volume = FreeMargin * MaximumRisk / p
+*Where __p__ is the price for 1.0 volume*  
+
+If the number of unsuccessful trades is more than 1 in a row, the volume of the lot will be reduced by the formula:
+
+    volume = volume - i / DecreaseFactor
+*Where __i = 2 .. n__ and __n__ is the number of unsuccessful trades  in a row*  
 
 ## Parameters
 
-### Param 1
-Integer parameter
+### Maximum Risk
+Responsible for Money Management. Here, in percentage, it is determined by how much of your account the Moving Average bot will trade. The parameter must be between 0 and 1.
 
-### Param 2
-Double parameter
+### Decrease Factor
+This parameter is responsible for limiting losses. The parameter must be more than 0.
 
-### Param 3
-Enum parameter. Possible values: Variant1, Variant2, Variant3
+### Moving Period
+Sets the period MA. The parameter must be more than 0.
 
-
-## Inputs
-
-### PriceInput
-Input for some specific price
+### Moving Shift
+Sets the shift MA
