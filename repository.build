@@ -10,9 +10,9 @@
   <property name="SolutionFolder"		  value="${SourcesDir}src\" />
   <property name="SolutionFile"		    value="Repository.Public.sln"					    unless="${property::exists('SolutionFile')}" />
   <property name="ToolsFolder"	      value="${SourcesDir}tools\"  />
-  
+
   <property name="OutputFolder"        value="${SourcesDir}build.ouput\" />
-  <property name="ProjectsToPackage"  value="SoftFx.PublicIndicators,SoftFx.PublicBots" />
+  <property name="ProjectsToPackage"  value="SoftFx.PublicIndicators,SoftFx.PublicBots,ImportAccountStateBot,MovingAverageBot" />
 
   <target name="help">
     <echo message="Use: nant.exe buildfile:repository.build [Build|Clean]"/>
