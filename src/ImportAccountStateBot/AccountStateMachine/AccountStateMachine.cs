@@ -21,10 +21,10 @@ namespace ImportAccountStateBot
 
             set
             {
-                _currentState = value;
+                if (_currentState != null)
+                    SendTokensToNextState(value);
 
-                if (value != null)
-                    SendTokensToNextState();
+                _currentState = value;
             }
         }
 
@@ -69,12 +69,12 @@ namespace ImportAccountStateBot
             }
         }
 
-        private void SendTokensToNextState()
+        private void SendTokensToNextState(AccountState nextState)
         {
-            if (ExpectedState == null)
+            if (nextState == null)
                 return;
 
-            var tokens = _currentState.TokensToNextPositionsStates(ExpectedState);
+            var tokens = _currentState.TokensToNextPositionsStates(nextState);
 
             foreach (var token in tokens)
                 if (!token.IsEmpty)
