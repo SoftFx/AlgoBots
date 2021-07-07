@@ -31,7 +31,7 @@ namespace ImportAccountStateBot
 
 
         [Parameter(IsRequired = true, DefaultValue = DefaultAccountStateFileName)]
-        [FileFilter("CSV file (*.csv)", ".csv")]
+        [FileFilter("CSV file (*.csv)", "*.csv")]
         public File StateFile { get; set; }
 
         [Parameter(DisplayName = "Config File", DefaultValue = ConfigFileName)]
