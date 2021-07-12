@@ -51,10 +51,10 @@ namespace ImportAccountStateBot
             IsDebug = Config.IsDebug;
             LoopTimeout = Config.RefreshTimeout;
 
-            _csvParser = new AccountStateFileParser(Config.CSVConfig, Config.SetEmptyStateAtTheEnd);
+            _csvParser = new AccountStateFileParser(this);
             _orderManager = new OrderWatchersManager(this);
 
-            _accStateMachine = _csvParser.ReadAccountStates(StateFile.FullPath, this);
+            _accStateMachine = new AccountStateMachine(this);
             _accStateMachine.PushToken += _orderManager.GetTokenHandler; //subscription shoul be before Init method
 
             await InitCurrentAccountState();
@@ -66,6 +66,9 @@ namespace ImportAccountStateBot
         {
             PrintCurrentStatus();
             IsTimeToExitBot();
+
+            if (_csvParser.HasNewData)
+                _accStateMachine?.AddAccountStates(_csvParser.ReadAccountStates());
 
             _accStateMachine?.ToNextAccountState();
 
@@ -90,6 +93,7 @@ namespace ImportAccountStateBot
             await _orderManager.ClearAllWatchers();
 
             Status.WriteLine("Initialization...");
+            _accStateMachine?.AddAccountStates(_csvParser.ReadAccountStates());
             _accStateMachine?.InitCurrentState(Account.NetPositions);
         }
 

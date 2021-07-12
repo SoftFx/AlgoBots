@@ -10,56 +10,75 @@ namespace ImportAccountStateBot
     public sealed class AccountStateFileParser
     {
         private readonly CSVFileConfig _config;
+        private readonly ImportAccountStateBot _bot;
         private readonly string[] _separator;
 
-        private readonly bool _setEmptyState;
+        private readonly string _stateFilePath;
 
 
-        public AccountStateFileParser(CSVFileConfig config, bool setEmptyState)
+        public bool HasNewData => System.IO.File.GetLastWriteTimeUtc(_stateFilePath) != LastReadTime;
+
+        public int FileLinesRead { get; private set; }
+
+        public DateTime LastReadTime { get; private set; }
+
+
+        public AccountStateFileParser(ImportAccountStateBot bot)
         {
-            _separator = new string[] { config.Separator };
+            _config = bot.Config.CSVConfig;
+            _stateFilePath = bot.StateFile.FullPath;
+            _bot = bot;
 
-            _setEmptyState = setEmptyState;
-            _config = config;
+            if (!System.IO.File.Exists(_stateFilePath))
+                throw new Exception($"State file: {_stateFilePath} not found!");
+
+            _separator = new string[] { _config.Separator };
+
+            FileLinesRead = _config.SkipFirstLine ? 1 : 0;  //skip .csv file headers
         }
 
 
-        public AccountStateMachine ReadAccountStates(string file, ITimeProvider provider)
+        public List<AccountState> ReadAccountStates()
         {
-            var states = ReadPositionsStates(file);
-            var stateGroups = states.OrderBy(u => u.Time).ThenBy(u => u.Symbol)
-                                    .GroupBy(u => u.Time).Select(u => new AccountState(u.Key, u)).ToList();
+            var states = ReadPositionsStates(_stateFilePath);
 
-            if (_setEmptyState)
-            {
-                var lastStateTime = stateGroups.LastOrDefault()?.StateTime ?? provider.UtcNow;
-
-                if (lastStateTime < provider.UtcNow)
-                    lastStateTime = provider.UtcNow.AddMinutes(5);
-
-                stateGroups.Add(new AccountState(lastStateTime, new List<PositionState>()));
-            }
-
-            return new AccountStateMachine(stateGroups, provider);
+            return states.OrderBy(u => u.Time).ThenBy(u => u.Symbol)
+                         .GroupBy(u => u.Time).Select(u => new AccountState(u.Key, u)).ToList();
         }
 
         private List<PositionState> ReadPositionsStates(string file)
         {
             var states = new List<PositionState>(1 << 5);
 
-            using (var fs = new FileStream(file, FileMode.Open))
+            try
             {
-                using (var sr = new StreamReader(fs))
+                using (var fs = new FileStream(file, FileMode.Open))
                 {
-                    if (_config.SkipFirstLine) //skip .csv file headers
-                        sr.ReadLine();
+                    using (var sr = new StreamReader(fs))
+                    {
+                        for (int i = 0; i < FileLinesRead; ++i) //skip read lines
+                            sr.ReadLine();
 
-                    while (!sr.EndOfStream)
-                        states.Add(ParseStringToPosition(sr.ReadLine()));
+                        while (!sr.EndOfStream)
+                            states.Add(ParseStringToPosition(ReadLineAndUpdateCounter(sr)));
+                    }
                 }
+
+                LastReadTime = System.IO.File.GetLastWriteTimeUtc(_stateFilePath);
+            }
+            catch (Exception ex)
+            {
+                _bot.PrintError(ex.ToString());
             }
 
             return states;
+        }
+
+        private string ReadLineAndUpdateCounter(StreamReader sr)
+        {
+            FileLinesRead++;
+
+            return sr.ReadLine();
         }
 
         private PositionState ParseStringToPosition(string str)

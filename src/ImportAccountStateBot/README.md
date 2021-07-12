@@ -55,9 +55,6 @@ Timeout between updating the account state. RefreshTimeout measured in milliseco
 ### Mode
 Trade opening mode. Enum parameter. Possible values: Market, TrailingLimit, TrailingLimitPercent. Mode affects order types and trailing prices.
 
-### SetEmptyStateAtTheEnd
-Close all positions if all account states have been passed. Bool parameter. Possible values: true and false.
-
 ### DefaultVolume
 Is used if the position volume didn't record in the .csv file. Double parameter. Should be greater than 0.
 

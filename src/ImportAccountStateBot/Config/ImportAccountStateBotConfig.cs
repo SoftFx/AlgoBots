@@ -14,8 +14,6 @@ namespace ImportAccountStateBot
 
         public ImportMode Mode { get; set; }
 
-        public bool SetEmptyStateAtTheEnd { get; set; }
-
 
         public CSVFileConfig CSVConfig { get; set; }
 
@@ -27,7 +25,6 @@ namespace ImportAccountStateBot
             IsDebug = false;
             RefreshTimeout = 1000;
             Mode = ImportMode.Market;
-            SetEmptyStateAtTheEnd = false;
 
             CSVConfig = new CSVFileConfig
             {
@@ -56,7 +53,6 @@ namespace ImportAccountStateBot
             Rule.CheckNumberGt(nameof(CSVConfig.DefaultVolume), CSVConfig.DefaultVolume, 0.0);
 
             Rule.CheckNumberGte(nameof(TrailingLimitPercentMode.Percent), TrailingLimitPercentMode.Percent, 0);
-            //Rule.CheckNumberLte(nameof(TrailingLimitsPercentMode.Percent), TrailingLimitsPercentMode.Percent, 100.0);
         }
 
         private string ConfigToString()
@@ -66,7 +62,6 @@ namespace ImportAccountStateBot
             sb.AppendLine($"{nameof(IsDebug)} = {IsDebug}");
             sb.AppendLine($"{nameof(RefreshTimeout)} = {RefreshTimeout}");
             sb.AppendLine($"{nameof(Mode)} = {Mode}");
-            sb.AppendLine($"{nameof(SetEmptyStateAtTheEnd)} = {SetEmptyStateAtTheEnd}");
             sb.AppendLine();
 
             sb.AppendLine($"[[{nameof(CSVConfig)}]]");

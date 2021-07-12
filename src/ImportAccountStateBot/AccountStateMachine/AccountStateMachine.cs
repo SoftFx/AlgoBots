@@ -32,13 +32,15 @@ namespace ImportAccountStateBot
 
         public bool IsNextStateTime => ExpectedState != null && _time.UtcNow >= ExpectedState.StateTime;
 
+        public bool IsFutureStateTime(AccountState state) => ExpectedState == null || ExpectedState.StateTime < state.StateTime;
+
 
         public Action<TransactionToken> PushToken;
 
 
-        public AccountStateMachine(IEnumerable<AccountState> states, ITimeProvider time)
+        public AccountStateMachine(ITimeProvider time)
         {
-            _states = new LinkedList<AccountState>(states);
+            _states = new LinkedList<AccountState>();
             _time = time;
         }
 
@@ -47,15 +49,30 @@ namespace ImportAccountStateBot
             var currentTime = _time.UtcNow;
             var states = positions.Select(u => PositionState.ParsePosition(u, currentTime));
 
-            RollToNextState();
+            var previousState = GetCurrentStatePosition();
 
-            CurrentState = new AccountState(currentTime, states);
+            CurrentState = new AccountState(currentTime, states); // set current account state
+            CurrentState = previousState; // roll back to the previous state in the file
         }
 
-        private void RollToNextState()
+        public void AddAccountStates(IEnumerable<AccountState> states)
         {
+            foreach (var state in states)
+                if (IsFutureStateTime(state))
+                    _states.AddLast(state);
+        }
+
+        private AccountState GetCurrentStatePosition()
+        {
+            var _previousState = _states.First;
+
             while (IsNextStateTime)
+            {
+                _previousState = _states.First;
                 _states.RemoveFirst();
+            }
+
+            return _previousState?.Value;
         }
 
         public void ToNextAccountState()
@@ -88,7 +105,7 @@ namespace ImportAccountStateBot
             sb.AppendTimeToNextState(ExpectedState, _time);
             sb.AppendLine();
 
-            sb.AppendAccountState(CurrentState, "Last");
+            sb.AppendAccountState(CurrentState, "Current");
             sb.AppendAccountState(ExpectedState, "Expected");
 
             return sb.ToString();
