@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SoftFx;
+using SoftFx.Common.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,9 +31,9 @@ namespace ImportAccountStateBot
         public bool IsEmpty => _positions.Count == 0;
 
 
-        public AccountState(DateTime stateTime, IEnumerable<PositionState> states)
+        public AccountState(DateTime stateTime, IList<PositionState> states)
         {
-            _positions = states?.ToDictionary(k => k.Symbol, v => v);
+            _positions = StatesToDict(stateTime, states);
 
             Symbols = new SortedSet<string>(_positions?.Keys);
             StateTime = stateTime;
@@ -52,6 +54,25 @@ namespace ImportAccountStateBot
             }
 
             return tokens;
+        }
+
+        private static Dictionary<string, PositionState> StatesToDict(DateTime time, IList<PositionState> states)
+        {
+            var positions = new Dictionary<string, PositionState>(states.Count);
+
+            foreach (var state in states)
+            {
+                if (!positions.ContainsKey(state.Symbol))
+                    positions.Add(state.Symbol, state);
+                else
+                    throw new ValidationException(
+                        $"State with Symbol {state.Symbol} already has been added. " +
+                        $"Account state time: {time.NormalDateForm()}. " +
+                        $"First state = {positions[state.Symbol]}, " +
+                        $"second state = {state}");
+            }
+
+            return positions;
         }
 
         private string StateToString()

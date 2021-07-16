@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoftFx;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -14,7 +15,7 @@ namespace ImportAccountStateBot
         private readonly string[] _separator;
 
         private readonly string _stateFilePath;
-
+        private readonly string _defaultHeader;
 
         public bool HasNewData => System.IO.File.GetLastWriteTimeUtc(_stateFilePath) != LastReadTime;
 
@@ -29,12 +30,12 @@ namespace ImportAccountStateBot
             _stateFilePath = bot.StateFile.FullPath;
             _bot = bot;
 
-            if (!System.IO.File.Exists(_stateFilePath))
-                throw new Exception($"State file: {_stateFilePath} not found!");
-
             _separator = new string[] { _config.Separator };
+            _defaultHeader = string.Join(_config.Separator, new string[] { "Time", "Symbol", "Side (Buy - true, Sell - false)", "Volume" });
 
             FileLinesRead = _config.SkipFirstLine ? 1 : 0;  //skip .csv file headers
+
+            CheckOrCreateStateFile();
         }
 
 
@@ -43,7 +44,7 @@ namespace ImportAccountStateBot
             var states = ReadPositionsStates(_stateFilePath);
 
             return states.OrderBy(u => u.Time).ThenBy(u => u.Symbol)
-                         .GroupBy(u => u.Time).Select(u => new AccountState(u.Key, u)).ToList();
+                         .GroupBy(u => u.Time).Select(u => new AccountState(u.Key, u.ToList())).ToList();
         }
 
         private List<PositionState> ReadPositionsStates(string file)
@@ -68,7 +69,7 @@ namespace ImportAccountStateBot
             }
             catch (Exception ex)
             {
-                _bot.PrintError(ex.ToString());
+                _bot.PrintError(ex.Message);
             }
 
             return states;
@@ -81,16 +82,37 @@ namespace ImportAccountStateBot
             return sr.ReadLine();
         }
 
+        private void CheckOrCreateStateFile()
+        {
+            if (!System.IO.File.Exists(_stateFilePath))
+            {
+                using (var fw = new FileStream(_stateFilePath, FileMode.Create))
+                {
+                    using (var sw = new StreamWriter(fw))
+                        sw.WriteLine(_defaultHeader);
+                }
+
+                _bot.PrintError($"File {_stateFilePath} not found. Empty file has been created");
+            }
+        }
+
         private PositionState ParseStringToPosition(string str)
         {
-            var array = str.Split(_separator, StringSplitOptions.RemoveEmptyEntries);
+            try
+            {
+                var array = str.Split(_separator, StringSplitOptions.RemoveEmptyEntries).Select(u => u.Trim()).ToArray();
 
-            var time = DateTime.ParseExact(array[0], _config.TimeFormat, CultureInfo.InvariantCulture);
-            var symbol = array[1];
-            var side = string.Equals(array[2], "true", StringComparison.InvariantCultureIgnoreCase) ? OrderSide.Buy : OrderSide.Sell;
-            var volume = array.Length > 3 ? double.Parse(array[3]) : _config.DefaultVolume;
+                var time = DateTime.ParseExact(array[0], _config.TimeFormat, CultureInfo.InvariantCulture);
+                var symbol = array[1];
+                var side = string.Equals(array[2], "true", StringComparison.InvariantCultureIgnoreCase) ? OrderSide.Buy : OrderSide.Sell;
+                var volume = array.Length > 3 ? double.Parse(array[3]) : _config.DefaultVolume;
 
-            return new PositionState(time, symbol, side, volume);
+                return new PositionState(time, symbol, side, volume);
+            }
+            catch (Exception ex)
+            {
+                throw new ValidationException($"String \"{str}\" - cannot be parsed. {ex.Message}");
+            }
         }
     }
 }

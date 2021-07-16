@@ -27,13 +27,12 @@ Time,Symbol,Side,Volume
 * Side - position side. Bool parameter. Possible values: true - Buy, false - Sell
 * Volume - position volume
 
-## Config description (actual for version 1.0)
+## Config description (actual for version 1.1)
 ### Config sample
 ```
 IsDebug = false
 RefreshTimeout = 1000
 Mode = "Market"
-SetEmptyStateAtTheEnd = false
 
 [CSVConfig]
 DefaultVolume = 1.0
