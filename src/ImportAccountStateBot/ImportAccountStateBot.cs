@@ -19,7 +19,7 @@ namespace ImportAccountStateBot
     }
 
 
-    [TradeBot(Category = CommonConstants.Category, SetupMainSymbol = false, DisplayName = "ImportAccountStateBot", Version = "1.0")]
+    [TradeBot(Category = CommonConstants.Category, SetupMainSymbol = false, DisplayName = "ImportAccountStateBot", Version = "1.1")]
     public class ImportAccountStateBot : SingleLoopBot<ImportAccountStateBotConfig>, ITimeProvider
     {
         private const string ConfigFileName = "ImportAccountStateBot.tml";

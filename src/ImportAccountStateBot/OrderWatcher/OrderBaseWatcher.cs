@@ -154,7 +154,7 @@ namespace ImportAccountStateBot
 
                     if (result.IsCompleted)
                     {
-                        token -= openToken;
+                        token -= new TransactionToken(result.ResultingOrder);
                         continue;
                     }
                 }

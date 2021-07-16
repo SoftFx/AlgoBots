@@ -27,7 +27,8 @@ namespace ImportAccountStateBot
 
         public TransactionToken(string symbol) : this(symbol, 0.0, OrderSide.Buy) { }
 
-        public TransactionToken(Order order) : this(order.Symbol, order.RemainingVolume, order.Side) { }
+        //TODO: should be redone after fixing in Api
+        public TransactionToken(Order order) : this(order.Symbol, order.RemainingVolume.E(0.0) ? order.ExecVolume : order.RemainingVolume, order.Side) { }
 
         public TransactionToken(PositionState pos) : this(pos.Symbol, pos.Volume, pos.Side) { }
 

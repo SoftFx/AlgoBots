@@ -109,9 +109,10 @@ namespace SoftFx.Routines
             }
             catch (Exception ex)
             {
-                PrintError($"Failed to init bot: {(ex is ValidationException ? ex.Message : ex.ToString())}");
+                var errorMessage = ex is ValidationException ? ex.Message : ex.ToString();
+                PrintError($"Failed to init bot: {errorMessage}");
                 State = BotState.Failed;
-                _stopReason = $"Init failed: {ex}";
+                _stopReason = $"Init failed: {errorMessage}";
                 Exit();
                 return;
             }

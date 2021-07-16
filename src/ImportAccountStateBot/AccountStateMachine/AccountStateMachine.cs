@@ -49,10 +49,13 @@ namespace ImportAccountStateBot
             var currentTime = _time.UtcNow;
             var states = positions.Select(u => PositionState.ParsePosition(u, currentTime));
 
-            var previousState = GetCurrentStatePosition();
+            var previousState = GetCurrentStatePosition() ?? _currentState;
 
-            CurrentState = new AccountState(currentTime, states); // set current account state
-            CurrentState = previousState; // roll back to the previous state in the file
+            _currentState = null; //reset old current acc state (for Account reconnect)
+            CurrentState = new AccountState(currentTime, states.ToList()); // set current account state
+
+            if (previousState != null)
+                CurrentState = previousState; // roll back to the previous state in the file
         }
 
         public void AddAccountStates(IEnumerable<AccountState> states)
@@ -64,15 +67,15 @@ namespace ImportAccountStateBot
 
         private AccountState GetCurrentStatePosition()
         {
-            var _previousState = _states.First;
+            AccountState _previousState = null;
 
             while (IsNextStateTime)
             {
-                _previousState = _states.First;
+                _previousState = _states.First.Value;
                 _states.RemoveFirst();
             }
 
-            return _previousState?.Value;
+            return _previousState;
         }
 
         public void ToNextAccountState()
