@@ -12,6 +12,7 @@ namespace ImportAccountStateBot
     {
         private readonly CSVFileConfig _config;
         private readonly ImportAccountStateBot _bot;
+
         private readonly string[] _separator;
 
         private readonly string _stateFilePath;

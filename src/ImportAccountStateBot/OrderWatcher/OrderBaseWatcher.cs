@@ -154,7 +154,14 @@ namespace ImportAccountStateBot
 
                     if (result.IsCompleted)
                     {
-                        token -= new TransactionToken(result.ResultingOrder);
+                        var resultingToken = new TransactionToken(result.ResultingOrder);
+                        var remainingToken = openToken - resultingToken; // if TTS opened partial order
+
+                        token -= openToken;
+
+                        if (remainingToken.Volume.Gte(_symbol.MinTradeVolume))
+                            _tokenQueue.Enqueue(remainingToken);
+
                         continue;
                     }
                 }
