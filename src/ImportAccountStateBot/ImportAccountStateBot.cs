@@ -1,5 +1,5 @@
-﻿using SoftFx.Routines;
-using SoftFx;
+﻿using SoftFx;
+using SoftFx.Routines;
 using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;

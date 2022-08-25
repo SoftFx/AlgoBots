@@ -1,72 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A0D8C046-FE2E-44B6-98D0-269D7587D8F0}</ProjectGuid>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SoftFx.Common</RootNamespace>
-    <AssemblyName>SoftFx.Common</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <LangVersion>7.1</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Nett, Version=0.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nett.0.6.2\lib\Net40\Nett.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.Algo.Api, Version=1.5.0.0, Culture=neutral, PublicKeyToken=90b5c26c2d37a2da, processorArchitecture=MSIL">
-      <HintPath>..\packages\TickTrader.Algo.Api.1.5.0\lib\netstandard2.0\TickTrader.Algo.Api.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Nett" Version="0.15.0" />
+    <PackageReference Include="TickTrader.Algo.Api" Version="1.5.1-beta.2" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Adapters\BookEntryAdapter.cs" />
-    <Compile Include="Adapters\QuoteAdapter.cs" />
-    <Compile Include="BusinessObjects\BarSymbol.cs" />
-    <Compile Include="CommonConstants.cs" />
-    <Compile Include="Config\BotConfig.cs" />
-    <Compile Include="Extensions\DateTimeExtensions.cs" />
-    <Compile Include="Extensions\FormattingExtensions.cs" />
-    <Compile Include="Extensions\OrderSideExtensions.cs" />
-    <Compile Include="Extensions\ParsingExtensions.cs" />
-    <Compile Include="Extensions\PriceExtensions.cs" />
-    <Compile Include="Extensions\QuoteExtensions.cs" />
-    <Compile Include="Extensions\SymbolExtensions.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Templates\SingleLoopBot.cs" />
-    <Compile Include="Templates\TradeBotExtended.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

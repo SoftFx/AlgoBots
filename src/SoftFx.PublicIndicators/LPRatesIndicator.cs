@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.LevelDb;
@@ -135,15 +135,15 @@ namespace SoftFx.PublicIndicators
         protected override async void Calculate(bool isNewBar)
         {
             var isHistoryBar = _startTime > Bars[0].CloseTime;
-            if ( isHistoryBar || isNewBar )
+            if (isHistoryBar || isNewBar)
                 return;
 
             if (!_isHistoryBarsProcessed && EnableRestoring)
                 ProcessHistoryBars();
             else
                 await ProcessCurrentBar();
-            
-            
+
+
         }
 
         #region Initialization methods
@@ -317,7 +317,7 @@ namespace SoftFx.PublicIndicators
                 lpsSnapshot[lp.Key.ToString() + "Ask"] = lp.Value.Result[1];
             }
 
-            if(EnableSaving)
+            if (EnableSaving)
                 SaveToDB(lpsSnapshot, initBarsCount);
         }
 
@@ -394,7 +394,7 @@ namespace SoftFx.PublicIndicators
 
                 if (response.StatusCode != HttpStatusCode.OK)
                     return double.NaN;
-            
+
                 switch (lp)
                 {
                     case LiquidityProvider.SoftFx:
@@ -443,7 +443,7 @@ namespace SoftFx.PublicIndicators
                         return double.NaN;
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return double.NaN;
             }
@@ -506,7 +506,7 @@ namespace SoftFx.PublicIndicators
                         return double.NaN;
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return double.NaN;
             }
