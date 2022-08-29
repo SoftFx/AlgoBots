@@ -8,7 +8,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace SoftFx.PublicIndicators
 {
-    [Indicator(DisplayName = "Universal Currency Indicator", Category = CommonConstants.Category, Version = "1.4")]
+    [Indicator(DisplayName = "Universal Currency Indicator", Category = CommonConstants.Category, Version = "2.0")]
     public class UniversalCurrencyIndicator : Indicator
     {
         private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(100);

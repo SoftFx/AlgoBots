@@ -13,7 +13,7 @@ using TickTrader.SeriesStorage.LevelDb;
 
 namespace SoftFx.PublicIndicators
 {
-    [Indicator(DisplayName = "LP Rates Indicator", Category = CommonConstants.Category, Version = "1.0")]
+    [Indicator(DisplayName = "LP Rates Indicator", Category = CommonConstants.Category, Version = "2.0")]
     class LPRatesIndicator : Indicator
     {
         [Parameter(DisplayName = "Save to DB", DefaultValue = false)]

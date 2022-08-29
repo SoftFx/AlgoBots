@@ -7,7 +7,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace SoftFx.PublicIndicators
 {
-    [Indicator(DisplayName = "Simple Equity Indicator", Category = CommonConstants.Category, Version = "1.4")]
+    [Indicator(DisplayName = "Simple Equity Indicator", Category = CommonConstants.Category, Version = "2.0")]
     public class SimpleEquityIndicator : Indicator
     {
         private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(100);

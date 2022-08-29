@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 
 namespace SoftFx.SmartTradeBot
 {
-    [TradeBot(DisplayName = "SmartTradeBot", Category = CommonConstants.Category, Version = "1.1")]
+    [TradeBot(DisplayName = "SmartTradeBot", Category = CommonConstants.Category, Version = "2.0")]
     public class SmartTradeBot : TradeBot
     {
         private double _price;

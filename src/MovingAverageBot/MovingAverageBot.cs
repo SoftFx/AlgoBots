@@ -6,7 +6,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace MovingAverageBot
 {
-    [TradeBot(DisplayName = "MovingAverageBot", Category = CommonConstants.Category, Version = "1.0")]
+    [TradeBot(DisplayName = "MovingAverageBot", Category = CommonConstants.Category, Version = "1.1")]
     public class MovingAverageBot : TradeBot
     {
         [Parameter(DisplayName = "MaximumRisk", DefaultValue = 0.02)]
