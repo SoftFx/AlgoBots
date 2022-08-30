@@ -6,7 +6,7 @@ var target = ConsoleOrBuildSystemArgument("Target", "Build");
 var buildNumber = ConsoleOrBuildSystemArgument("BuildNumber", 0);
 var configuration = ConsoleOrBuildSystemArgument("Configuration", "Release");
 var sourcesDir = ConsoleOrBuildSystemArgument("SourcesDir", "./");
-var artifactsDirName = ConsoleOrBuildSystemArgument("ArtifactsDirName", "artifacts.build");
+var artifactsDirName = ConsoleOrBuildSystemArgument("ArtifactsDirName", "build.output");
 var details = ConsoleOrBuildSystemArgument<DotNetVerbosity>("Details", DotNetVerbosity.Detailed);
 
 var sourcesPath = DirectoryPath.FromString(sourcesDir);
