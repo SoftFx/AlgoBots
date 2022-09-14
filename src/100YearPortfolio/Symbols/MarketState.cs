@@ -27,12 +27,14 @@ namespace _100YearPortfolio
 
         public bool CheckTotalPercent()
         {
-            return _symbols.Sum(u => u.Percent).Lte(MaxPercentSum);
+            return _symbols.Sum(u => Math.Abs(u.Percent)).Lte(MaxPercentSum);
         }
 
-        public string BuildCurrentState()
+        public override string ToString()
         {
             var sb = new StringBuilder(1 << 10);
+
+            sb.AppendLine("Symbols:");
 
             foreach (var symbol in _symbols)
                 sb.AppendLine($"{symbol.Name} - {symbol.GetCurrentState()}");

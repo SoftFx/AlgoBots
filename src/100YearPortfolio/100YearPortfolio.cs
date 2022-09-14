@@ -1,76 +1,137 @@
-﻿using SoftFx;
+﻿using _100YearPortfolio.Clients;
+using _100YearPortfolio.Portfolio;
+using SoftFx;
+using System.Text;
 using TickTrader.Algo.Api;
-using TradeFile = TickTrader.Algo.Api.File;
 
 namespace _100YearPortfolio
 {
-    [TradeBot(DisplayName = "100YearPortfolioBot", Category = CommonConstants.Category, Version = "1.0")]
+    [TradeBot(DisplayName = FullBotName, Category = CommonConstants.Category, Version = "1.0")]
     public class PortfolioBot : TradeBot
     {
         private const int StatusUpdateTimeout = 1000;
 
-        public enum BalanceTypeEnum
-        {
-            Balance,
-            Equity
-        }
+        public const string FullBotName = "100YearPortfolioBot";
 
-        [Parameter(DisplayName = "Portfolio", DefaultValue = "DesiredStockDistribution.csv", IsRequired = true)]
-        [FileFilter("CSV Config (*.csv)", "*csv")]
-        public TradeFile PortfolioFile { get; set; }
-
-        [Parameter(DisplayName = "CSV separator", DefaultValue = ";")]
-        public string Separator { get; set; }
-
-        [Parameter(DisplayName = "Once per N hour", DefaultValue = 24)]
-        public int UpdateHours { get; set; }
-
-        [Parameter]
-        public BalanceTypeEnum BalanceType { get; set; }
 
         [Parameter]
         public bool UseDebug { get; set; }
 
+        [Parameter(DefaultValue = "AIzaSyDFPzNAaQgYaWUHuKUSLAHnlumB_rLT2CA")]
+        //[Parameter]
+        public string ApiKey { get; set; }
 
-        public double CalculationBalance => BalanceType == BalanceTypeEnum.Balance ? Account.Balance : Account.Equity;
+
+        [Parameter(DefaultValue = "https://docs.google.com/spreadsheets/d/1VstuuH9WYRDlUpNiagz026C6gfYwUFoOVuR8I5XJCgw/edit#gid=0")]
+        public string SheetLink { get; set; }
 
 
-        private MarketState _marketState;
+        internal PortfolioConfig Config => _config;
+
+        public double CalculationBalance => Config.BalanceType.IsBalance() ? Account.Balance : Account.Equity;
+
+        public double EquityChange => MarketSymbol.PercentCoef * (1.0 - Account.Equity / _lastCalculatedEquity);
+
+
+        private BaseSheetClient _client;
+        private PortfolioConfig _config;
+        private MarketState _market;
+
+        private RecalculationEvent _marketState;
+        private RecalculationEvent _equityState;
+
+        private double _lastCalculatedEquity;
 
 
         protected override void Init()
         {
-            var reader = new PortfolioReader(this);
+            _lastCalculatedEquity = Account.Equity;
 
-            if (!reader.TryRead(PortfolioFile, out _marketState))
+            _client = ClientFactory.GetClient(SheetLink, ApiKey);
+
+            if (!_client.TryReadConfig(out _config, out var error) ||
+                !_client.TryReadPortfolio(this, out _market, out error))
+            {
+                PrintError(error);
+                Status.WriteLine(error);
                 Exit();
+            }
+
+            _marketState = new RecalculationEvent
+            {
+                ChangeTimeAction = t => t.AddHours(Config.UpdateHours),
+                RecalculateAction = _market.Recalculate,
+            };
+
+            _equityState = new RecalculationEvent
+            {
+                ChangeTimeAction = t => t.AddSeconds(Config.EquityUpdateTime),
+                RecalculateAction = RememberEquity,
+            };
 
             ThreadPool.QueueUserWorkItem(UpdateLoop);
         }
+
+        protected override void OnStop() => _client.Dispose();
+
 
         private async void UpdateLoop(object _)
         {
             while (!IsStopped)
             {
-                Status.WriteLine($"{UtcNow}");
-                Status.WriteLine();
-                Status.WriteLine($"{nameof(BalanceType)}={BalanceType}");
+                var currentStatus = BuildCurrentStatus();
 
-                Status.WriteLine();
-                Status.WriteLine("Symbols:");
-                Status.WriteLine(_marketState.BuildCurrentState());
+                Status.WriteLine(currentStatus);
 
-                await _marketState.Recalculate();
+                await _marketState.Recalculate(UtcNow);
+                await _equityState.Recalculate(UtcNow);
+
+                Status.WriteLine(BuildDeltaInfo());
+
                 await Delay(StatusUpdateTimeout);
 
                 Status.Flush();
             }
         }
 
+        private string BuildCurrentStatus()
+        {
+            var sb = new StringBuilder(1 << 10);
+
+            sb.AppendLine($"{UtcNow}").AppendLine()
+              .AppendLine($"{Config}").AppendLine()
+              .AppendLine($"Account:")
+              .AppendLine($"{nameof(Account.Balance)} = {Account.Balance:F6}")
+              .AppendLine($"{nameof(Account.Equity)} = {Account.Equity:F6}")
+              .AppendLine()
+              .AppendLine($"{_market}");
+
+            return sb.ToString();
+        }
+
+        private string BuildDeltaInfo()
+        {
+            var sb = new StringBuilder(1 << 5);
+
+            sb.AppendLine($"Saved equity = {_lastCalculatedEquity:F4}, equity change: {EquityChange:F4}%")
+              .AppendLine($"Resave equity value after {_equityState.GetLeftTime(UtcNow)} sec...")
+              .AppendLine()
+              .AppendLine($"Recalculation symbols after {_marketState.GetLeftTime(UtcNow)} sec...");
+
+            return sb.ToString();
+        }
+
         internal void PrintDebug(string msg)
         {
             if (UseDebug)
                 Print(msg);
+        }
+
+        private Task RememberEquity()
+        {
+            _lastCalculatedEquity = Account.Equity;
+
+            return Task.CompletedTask;
         }
     }
 }

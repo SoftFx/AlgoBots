@@ -1,44 +1,113 @@
-﻿using System.Globalization;
-using TickTrader.Algo.Api.Math;
-using TradeFile = TickTrader.Algo.Api.File;
+﻿using _100YearPortfolio.Portfolio;
+using System.Globalization;
+using static _100YearPortfolio.Portfolio.PortfolioConfig;
 
 namespace _100YearPortfolio
 {
     internal sealed class PortfolioReader
     {
-        private readonly PortfolioBot _bot;
+        private const string SymbolNameHeader = "Symbol";
 
-
-        public PortfolioReader(PortfolioBot bot)
+        private readonly List<string> _expectedSettings = new()
         {
-            _bot = bot;
+            UpdateHoursSettingName,
+            BalanceTypeSettingName,
+            EquityMinLevelSettingName,
+            EquityUpdateTimeName,
+            DefaultMaxLotSizeSettingName,
+        };
+
+
+        public bool TryReadSettings(List<List<string>> configStr, out PortfolioConfig config, out string error)
+        {
+            static string GetSettingReadError(string setting, string val) => $"Invalid format {setting} = {val}";
+
+            error = null;
+            config = null;
+
+            var updateHours = 1;
+            var minEquityLevel = 0.0;
+            var equituUpdateTime = 0;
+            var defaultMaxLotSize = 0.0;
+            var balanceType = BalanceTypeEnum.Balance;
+
+            foreach (var item in configStr)
+                if (item.Count > 1 && _expectedSettings.Contains(item[0]))
+                {
+                    var settingName = item[0];
+                    var valueStr = item[1];
+
+                    var ok = settingName switch
+                    {
+                        UpdateHoursSettingName => int.TryParse(valueStr, out updateHours),
+                        BalanceTypeSettingName => Enum.TryParse(valueStr, true, out balanceType),
+                        EquityMinLevelSettingName => TryReadPercent(valueStr, out minEquityLevel),
+                        EquityUpdateTimeName => int.TryParse(valueStr, out equituUpdateTime),
+                        DefaultMaxLotSizeSettingName => TryParseInvariantDouble(valueStr, out defaultMaxLotSize),
+                    };
+
+                    if (!ok)
+                        error = GetSettingReadError(settingName, valueStr);
+
+                    _expectedSettings.Remove(settingName);
+                }
+
+            if (_expectedSettings.Count == 0)
+            {
+                config = new PortfolioConfig
+                {
+                    UpdateHours = updateHours,
+                    BalanceType = balanceType,
+                    EquityMinLevel = minEquityLevel,
+                    EquityUpdateTime = equituUpdateTime,
+                    DefaultMaxLotSize = defaultMaxLotSize,
+                };
+            }
+            else
+                error = $"Some settings not found: {string.Join(',', _expectedSettings)}";
+
+            return string.IsNullOrEmpty(error);
         }
 
 
-        public bool TryRead(TradeFile file, out MarketState marketState)
+        public static bool TryReadPortfolio(PortfolioBot bot, List<List<string>> portfolioStr, out MarketState marketState, out string error)
         {
             marketState = new MarketState();
+            error = null;
+
+            var lineNumber = 0;
+
+            // Skip header if it exists
+            if (portfolioStr?.FirstOrDefault()?.FirstOrDefault()?.StartsWith(SymbolNameHeader) ?? false)
+                lineNumber++;
 
             try
             {
-                using var fileStream = file.Open(FileMode.Open);
-                using var reader = new StreamReader(fileStream);
-
-                var lineNumber = 0;
-
-                while (!reader.EndOfStream)
+                for (; lineNumber < portfolioStr.Count; ++lineNumber)
                 {
-                    var parts = reader.ReadLine().Split(_bot.Separator);
-                    lineNumber++;
+                    var line = portfolioStr[lineNumber];
 
-                    if (parts.Length < 2)
-                        throw new Exception($"Invalid line format line #{lineNumber}");
+                    if (line.Count < 2)
+                        throw new Exception($"Invalid line format");
 
-                    if (!TryReadPercent(parts[1], out var percent))
-                        throw new Exception($"Incorrect double value {parts[1]} line #{lineNumber}");
+                    var symbolName = line[0];
+                    var percentStr = line[1];
+                    var maxSumLot = (double?)null;
 
-                    var symbolName = parts[0];
-                    var symbol = new MarketSymbol(_bot, symbolName, percent);
+                    if (!TryReadPercent(percentStr, out var percent))
+                        throw new Exception($"Incorrect double value {percentStr}");
+
+                    if (line.Count > 2)
+                    {
+                        var maxSumLotStr = line[2];
+
+                        if (!TryParseInvariantDouble(maxSumLotStr, out var maxSumLotDouble))
+                            throw new Exception($"Incorrect double value {maxSumLotStr}");
+                        else
+                            maxSumLot = maxSumLotDouble;
+                    }
+
+                    var symbol = new MarketSymbol(bot, symbolName, percent, maxSumLot);
 
                     marketState.AddSymbol(symbol);
                 }
@@ -50,14 +119,23 @@ namespace _100YearPortfolio
             }
             catch (Exception ex)
             {
-                _bot.PrintError(ex.Message);
-                return false;
+                error = ex.Message;
+
+                if (lineNumber < portfolioStr.Count)
+                    error += $" line #{lineNumber}";
             }
+
+            return string.IsNullOrEmpty(error);
         }
 
         private static bool TryReadPercent(string str, out double percent)
         {
-            return double.TryParse(str.TrimEnd('%'), NumberStyles.Float, CultureInfo.InvariantCulture, out percent);
+            return TryParseInvariantDouble(str.TrimEnd('%'), out percent);
+        }
+
+        private static bool TryParseInvariantDouble(string str, out double val)
+        {
+            return double.TryParse(str.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out val);
         }
     }
 }
