@@ -44,7 +44,7 @@ namespace _100YearPortfolio
 
             if (_bot.Symbols[symbol].IsNull)
                 _status = "Not found!";
-            else if (MaxSumLot.Lte(Symbol.MinTradeVolume))
+            else if (MaxSumLot.Lt(Symbol.MinTradeVolume))
                 _status = SmallValueMessage(nameof(MaxSumLot), Symbol.MinTradeVolume);
             else
             {
@@ -75,7 +75,7 @@ namespace _100YearPortfolio
 
         public async Task Recalculate()
         {
-            if (!_isExist || _bot.EquityChange.Lt(_bot.Config.EquityMinLevel))
+            if (!_isExist)
                 return;
 
             await CancelOrderChain();
@@ -168,7 +168,7 @@ namespace _100YearPortfolio
         {
             return OpenOrderRequest.Template.Create()
                                    .WithParams(Name, side, BaseType, volume, price, null)
-                                   .WithExpiration(_bot.UtcNow.AddHours(_bot.Config.UpdateHours + 1))
+                                   .WithExpiration(_bot.UtcNow.AddHours(_bot.Config.UpdateMinutes + 1))
                                    .MakeRequest();
         }
 

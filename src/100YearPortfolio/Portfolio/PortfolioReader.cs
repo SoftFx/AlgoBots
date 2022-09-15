@@ -7,10 +7,12 @@ namespace _100YearPortfolio
     internal sealed class PortfolioReader
     {
         private const string SymbolNameHeader = "Symbol";
+        private const string PercentNameHeader = "Distribution";
+        private const string MaxLotsNameHeader = "MaxLotsSum";
 
         private readonly List<string> _expectedSettings = new()
         {
-            UpdateHoursSettingName,
+            UpdateMinSettingName,
             BalanceTypeSettingName,
             EquityMinLevelSettingName,
             EquityUpdateTimeName,
@@ -39,7 +41,7 @@ namespace _100YearPortfolio
 
                     var ok = settingName switch
                     {
-                        UpdateHoursSettingName => int.TryParse(valueStr, out updateHours),
+                        UpdateMinSettingName => int.TryParse(valueStr, out updateHours),
                         BalanceTypeSettingName => Enum.TryParse(valueStr, true, out balanceType),
                         EquityMinLevelSettingName => TryReadPercent(valueStr, out minEquityLevel),
                         EquityUpdateTimeName => int.TryParse(valueStr, out equituUpdateTime),
@@ -56,7 +58,7 @@ namespace _100YearPortfolio
             {
                 config = new PortfolioConfig
                 {
-                    UpdateHours = updateHours,
+                    UpdateMinutes = updateHours,
                     BalanceType = balanceType,
                     EquityMinLevel = minEquityLevel,
                     EquityUpdateTime = equituUpdateTime,
@@ -88,28 +90,29 @@ namespace _100YearPortfolio
                     var line = portfolioStr[lineNumber];
 
                     if (line.Count < 2)
-                        throw new Exception($"Invalid line format");
+                        throw new Exception($"Invalid line format.");
 
                     var symbolName = line[0];
                     var percentStr = line[1];
                     var maxSumLot = (double?)null;
 
                     if (!TryReadPercent(percentStr, out var percent))
-                        throw new Exception($"Incorrect double value {percentStr}");
+                        throw new Exception($"Incorrect {PercentNameHeader} = {percentStr}.");
 
-                    if (line.Count > 2)
+                    if (line.Count > 2 && !string.IsNullOrEmpty(line[2]))
                     {
                         var maxSumLotStr = line[2];
 
                         if (!TryParseInvariantDouble(maxSumLotStr, out var maxSumLotDouble))
-                            throw new Exception($"Incorrect double value {maxSumLotStr}");
+                            throw new Exception($"Incorrect {MaxLotsNameHeader} = {maxSumLotStr}.");
                         else
                             maxSumLot = maxSumLotDouble;
                     }
 
                     var symbol = new MarketSymbol(bot, symbolName, percent, maxSumLot);
 
-                    marketState.AddSymbol(symbol);
+                    if (!marketState.AddSymbol(symbol))
+                        throw new Exception($"Symbol {symbolName} is duplicated.");
                 }
 
                 if (!marketState.CheckTotalPercent())
@@ -122,7 +125,7 @@ namespace _100YearPortfolio
                 error = ex.Message;
 
                 if (lineNumber < portfolioStr.Count)
-                    error += $" line #{lineNumber}";
+                    error += $" Line #{lineNumber}";
             }
 
             return string.IsNullOrEmpty(error);

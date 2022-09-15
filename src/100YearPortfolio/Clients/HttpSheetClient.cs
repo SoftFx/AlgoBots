@@ -33,7 +33,7 @@ namespace _100YearPortfolio.Clients
 
             foreach (var row in sheet.RowsUsed())
             {
-                var cells = row.CellsUsed();
+                var cells = row.Cells();
 
                 cells.DataType = XLDataType.Text;
 

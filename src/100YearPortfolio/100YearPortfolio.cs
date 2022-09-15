@@ -3,6 +3,7 @@ using _100YearPortfolio.Portfolio;
 using SoftFx;
 using System.Text;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 
 namespace _100YearPortfolio
 {
@@ -17,12 +18,13 @@ namespace _100YearPortfolio
         [Parameter]
         public bool UseDebug { get; set; }
 
-        [Parameter(DefaultValue = "AIzaSyDFPzNAaQgYaWUHuKUSLAHnlumB_rLT2CA")]
-        //[Parameter]
+        //[Parameter(DefaultValue = "AIzaSyDFPzNAaQgYaWUHuKUSLAHnlumB_rLT2CA")]
+        [Parameter]
         public string ApiKey { get; set; }
 
 
-        [Parameter(DefaultValue = "https://docs.google.com/spreadsheets/d/1VstuuH9WYRDlUpNiagz026C6gfYwUFoOVuR8I5XJCgw/edit#gid=0")]
+        //[Parameter(DefaultValue = "https://docs.google.com/spreadsheets/d/1VstuuH9WYRDlUpNiagz026C6gfYwUFoOVuR8I5XJCgw/edit#gid=0")]
+        [Parameter]
         public string SheetLink { get; set; }
 
 
@@ -41,6 +43,7 @@ namespace _100YearPortfolio
         private RecalculationEvent _equityState;
 
         private double _lastCalculatedEquity;
+        private string _balancePrecision;
 
 
         protected override void Init()
@@ -49,30 +52,34 @@ namespace _100YearPortfolio
 
             _client = ClientFactory.GetClient(SheetLink, ApiKey);
 
-            if (!_client.TryReadConfig(out _config, out var error) ||
+            if (TryValidateGlobalState(out var error) || !_client.TryReadConfig(out _config, out error) ||
                 !_client.TryReadPortfolio(this, out _market, out error))
             {
                 PrintError(error);
                 Status.WriteLine(error);
                 Exit();
             }
-
-            _marketState = new RecalculationEvent
+            else
             {
-                ChangeTimeAction = t => t.AddHours(Config.UpdateHours),
-                RecalculateAction = _market.Recalculate,
-            };
+                _balancePrecision = GetBalanceFormat();
 
-            _equityState = new RecalculationEvent
-            {
-                ChangeTimeAction = t => t.AddSeconds(Config.EquityUpdateTime),
-                RecalculateAction = RememberEquity,
-            };
+                _marketState = new RecalculationEvent
+                {
+                    ChangeTimeAction = t => t.AddMinutes(Config.UpdateMinutes),
+                    RecalculateAction = _market.Recalculate,
+                };
 
-            ThreadPool.QueueUserWorkItem(UpdateLoop);
+                _equityState = new RecalculationEvent
+                {
+                    ChangeTimeAction = t => t.AddSeconds(Config.EquityUpdateTime),
+                    RecalculateAction = RememberEquity,
+                };
+
+                ThreadPool.QueueUserWorkItem(UpdateLoop);
+            }
         }
 
-        protected override void OnStop() => _client.Dispose();
+        protected override void OnStop() => _client?.Dispose();
 
 
         private async void UpdateLoop(object _)
@@ -85,6 +92,12 @@ namespace _100YearPortfolio
 
                 await _marketState.Recalculate(UtcNow);
                 await _equityState.Recalculate(UtcNow);
+
+                if (EquityChange.Lt(Config.EquityMinLevel))
+                {
+                    CriticalLossMoney();
+                    break;
+                }
 
                 Status.WriteLine(BuildDeltaInfo());
 
@@ -101,8 +114,8 @@ namespace _100YearPortfolio
             sb.AppendLine($"{UtcNow}").AppendLine()
               .AppendLine($"{Config}").AppendLine()
               .AppendLine($"Account:")
-              .AppendLine($"{nameof(Account.Balance)} = {Account.Balance:F6}")
-              .AppendLine($"{nameof(Account.Equity)} = {Account.Equity:F6}")
+              .AppendLine($"{nameof(Account.Balance)} = {Account.Balance.ToString(_balancePrecision)}")
+              .AppendLine($"{nameof(Account.Equity)} = {Account.Equity.ToString(_balancePrecision)}")
               .AppendLine()
               .AppendLine($"{_market}");
 
@@ -132,6 +145,34 @@ namespace _100YearPortfolio
             _lastCalculatedEquity = Account.Equity;
 
             return Task.CompletedTask;
+        }
+
+        private bool TryValidateGlobalState(out string error)
+        {
+            error = null;
+
+            if (Account.Type != AccountTypes.Net)
+                error = $"Only Net account is available";
+
+            return !string.IsNullOrEmpty(error);
+        }
+
+        private string GetBalanceFormat()
+        {
+            var smb = Currencies[Account.BalanceCurrency];
+
+            return $"F{smb.Digits}";
+        }
+
+        private void CriticalLossMoney()
+        {
+            Status.Flush();
+
+            Status.WriteLine($"Current Equity change = {EquityChange:F4}%");
+            Status.WriteLine($"{PortfolioConfig.EquityMinLevelSettingName} = {Config.EquityMinLevel}%");
+            Status.WriteLine("Bot has been stopped!");
+
+            Exit();
         }
     }
 }

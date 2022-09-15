@@ -10,7 +10,7 @@ namespace _100YearPortfolio.Portfolio
             Equity
         }
 
-        internal const string UpdateHoursSettingName = "Once Per N hour";
+        internal const string UpdateMinSettingName = "Once Per N min";
         internal const string BalanceTypeSettingName = "Balance Type";
         internal const string EquityMinLevelSettingName = "Equity Min Lvl";
         internal const string EquityUpdateTimeName = "Equity Update Time (sec)";
@@ -19,7 +19,7 @@ namespace _100YearPortfolio.Portfolio
         private string _toString;
 
 
-        public int UpdateHours { get; init; }
+        public int UpdateMinutes { get; init; }
 
         public BalanceTypeEnum BalanceType { get; init; }
 
@@ -37,7 +37,7 @@ namespace _100YearPortfolio.Portfolio
                 var sb = new StringBuilder(1 << 8);
 
                 sb.AppendLine($"{nameof(PortfolioConfig)}:")
-                  .AppendLine($"{UpdateHoursSettingName} = {UpdateHours}")
+                  .AppendLine($"{UpdateMinSettingName} = {UpdateMinutes}")
                   .AppendLine($"{BalanceTypeSettingName} = {BalanceType}")
                   .AppendLine($"{EquityMinLevelSettingName} = {EquityMinLevel}%")
                   .AppendLine($"{EquityUpdateTimeName} = {EquityUpdateTime}")
