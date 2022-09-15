@@ -29,7 +29,20 @@ namespace _100YearPortfolio
 
         private AccountDataProvider Account => _bot.Account;
 
+        private NetPosition Position => Account.NetPositions[Name];
+
+
         private double ActualMoney => _bot.CalculationBalance * Percent / PercentCoef;
+
+        private double UsedMoney
+        {
+            get
+            {
+                var side = Position.Side;
+
+                return Position.Volume * GetPrice(side) * Symbol.ContractSize * (side.IsBuy() ? 1 : -1);
+            }
+        }
 
 
         public MarketSymbol(PortfolioBot bot, string symbol, double percent, double? maxLotSum)
@@ -60,15 +73,14 @@ namespace _100YearPortfolio
             if (!_isExist)
                 return _status;
 
-            var balance = _bot.CalculationBalance;
-            var currentPercent = CalculateMarginDelta() / balance * PercentCoef;
-            var delta = Percent - currentPercent;
-            var deltaLots = balance * delta / (GetPrice(GetExpectedSide(delta)) * Symbol.ContractSize);
+            var used = UsedMoney;
+            var deltaLots = CalculateOpenVolume(ActualMoney - used);
+            var deltaPercent = Percent / PercentCoef - used / _bot.CalculationBalance;
 
             _sb.Clear()
                .Append($"{nameof(MaxSumLot)} = {MaxSumLot}, ")
                .Append($"expected = {Percent:F4}%, ")
-               .Append($"delta = {delta:F4}% ({deltaLots:F4} lots)");
+               .Append($"delta = {deltaPercent:F8}% ({deltaLots:F4} lots)");
 
             return _sb.ToString();
         }
@@ -80,20 +92,12 @@ namespace _100YearPortfolio
 
             await CancelOrderChain();
 
-            var expectedMoney = ActualMoney - CalculateMarginDelta();
+            var expectedMoney = ActualMoney - UsedMoney;
             var expectedSide = GetExpectedSide(expectedMoney);
 
-            _bot.PrintDebug($"Expected money {Name} = {expectedMoney:F6}");
+            _bot.PrintDebug($"{Name} money delta = {expectedMoney:F6}");
 
             await OpenOrderChain(expectedSide, Math.Abs(expectedMoney));
-        }
-
-        private double CalculateMarginDelta()
-        {
-            var buyMargin = Account.GetSymbolMargin(Name, OrderSide.Buy) ?? 0.0;
-            var sellMargin = Account.GetSymbolMargin(Name, OrderSide.Sell) ?? 0.0;
-
-            return buyMargin - sellMargin;
         }
 
         private async Task OpenOrderChain(OrderSide side, double money)
@@ -101,7 +105,8 @@ namespace _100YearPortfolio
             var price = GetPrice(side);
             var openVolume = Math.Min(CalculateOpenVolume(money, price), MaxSumLot);
 
-            _bot.PrintDebug($"{Name} open volume = {openVolume}");
+            _bot.PrintDebug($"{Name} open volume = {openVolume:F8}, min volume = {Symbol.MinTradeVolume}");
+            _bot.PrintDebug($"{Name} try open = {openVolume.Gte(Symbol.MinTradeVolume)}");
 
             while (openVolume.Gte(Symbol.MinTradeVolume))
             {
