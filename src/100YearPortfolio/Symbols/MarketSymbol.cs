@@ -34,16 +34,6 @@ namespace _100YearPortfolio
 
         private double ActualMoney => _bot.CalculationBalance * Percent / PercentCoef;
 
-        private double UsedMoney
-        {
-            get
-            {
-                var side = Position.Side;
-
-                return Position.Volume * GetPrice(side) * Symbol.ContractSize * (side.IsBuy() ? 1 : -1);
-            }
-        }
-
 
         public MarketSymbol(PortfolioBot bot, string symbol, double percent, double? maxLotSum)
         {
@@ -73,9 +63,9 @@ namespace _100YearPortfolio
             if (!_isExist)
                 return _status;
 
-            var used = UsedMoney;
+            var used = GetUsedMoney();
             var deltaLots = CalculateOpenVolume(ActualMoney - used);
-            var deltaPercent = Percent / PercentCoef - used / _bot.CalculationBalance;
+            var deltaPercent = Percent - used / _bot.CalculationBalance * PercentCoef;
 
             _sb.Clear()
                .Append($"{nameof(MaxSumLot)} = {MaxSumLot}, ")
@@ -92,7 +82,7 @@ namespace _100YearPortfolio
 
             await CancelOrderChain();
 
-            var expectedMoney = ActualMoney - UsedMoney;
+            var expectedMoney = ActualMoney - GetUsedMoney();
             var expectedSide = GetExpectedSide(expectedMoney);
 
             _bot.PrintDebug($"{Name} money delta = {expectedMoney:F6}");
@@ -180,6 +170,23 @@ namespace _100YearPortfolio
         private static OrderSide GetExpectedSide(double money)
         {
             return money.Gte(0.0) ? OrderSide.Buy : OrderSide.Sell;
+        }
+
+        private double GetUsedMoney()
+        {
+            static int GetMoneySign(OrderSide side) => side.IsBuy() ? 1 : -1;
+
+            var posSide = Position.Side;
+            var money = Position.Volume * GetPrice(posSide) * GetMoneySign(posSide);
+
+            foreach (var order in Account.OrdersBySymbol(Name))
+            {
+                var orderSide = order.Side;
+
+                money += order.RemainingVolume * GetPrice(orderSide) * GetMoneySign(orderSide);
+            }
+
+            return money * Symbol.ContractSize;
         }
     }
 }
