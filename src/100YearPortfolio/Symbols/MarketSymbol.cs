@@ -73,6 +73,9 @@ namespace _100YearPortfolio
                .Append($"expected = {Percent:F4}%, ")
                .Append($"delta = {deltaPercent:F8}% ({deltaLots:F4} lots)");
 
+            if (_bot.UseDebug)
+                _sb.Append($", rate {bid}/{ask}");
+
             return _sb.ToString();
         }
 
