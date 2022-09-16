@@ -63,8 +63,9 @@ namespace _100YearPortfolio
             if (!_isExist)
                 return _status;
 
-            var used = GetUsedMoney();
-            var deltaLots = CalculateOpenVolume(ActualMoney - used);
+            var used = GetUsedMoney(out var bid, out var ask);
+            var deltaMoney = ActualMoney - used;
+            var deltaLots = CalculateOpenVolume(deltaMoney, deltaMoney > 0 ? bid : ask);
             var deltaPercent = Percent - used / _bot.CalculationBalance * PercentCoef;
 
             _sb.Clear()
@@ -82,17 +83,15 @@ namespace _100YearPortfolio
 
             await CancelOrderChain();
 
-            var expectedMoney = ActualMoney - GetUsedMoney();
-            var expectedSide = GetExpectedSide(expectedMoney);
+            var expectedMoney = ActualMoney - GetUsedMoney(out var bid, out var ask);
 
             _bot.PrintDebug($"{Name} money delta = {expectedMoney:F6}");
 
-            await OpenOrderChain(expectedSide, Math.Abs(expectedMoney));
+            await OpenOrderChain(Math.Abs(expectedMoney), expectedMoney > 0 ? bid : ask);
         }
 
-        private async Task OpenOrderChain(OrderSide side, double money)
+        private async Task OpenOrderChain(double money, double price)
         {
-            var price = GetPrice(side);
             var openVolume = Math.Min(CalculateOpenVolume(money, price), MaxSumLot);
 
             _bot.PrintDebug($"{Name} open volume = {openVolume:F8}, min volume = {Symbol.MinTradeVolume}");
@@ -105,7 +104,7 @@ namespace _100YearPortfolio
 
                 while (++attempt < MaxRejectAttempts)
                 {
-                    var res = await _bot.OpenOrderAsync(BuildRequest(curVolume, price, side));
+                    var res = await _bot.OpenOrderAsync(BuildRequest(curVolume, price, GetExpectedSide(money)));
 
                     if (res.IsCompleted)
                     {
@@ -147,16 +146,9 @@ namespace _100YearPortfolio
             return Task.WhenAll(cancelTasks);
         }
 
-        private double CalculateOpenVolume(double money, double? price = null)
+        private double CalculateOpenVolume(double money, double price)
         {
-            price ??= GetPrice(GetExpectedSide(money));
-
-            return money / (price.Value * Symbol.ContractSize);
-        }
-
-        private double GetPrice(OrderSide side)
-        {
-            return side.IsBuy() ? Symbol.Bid : Symbol.Ask;
+            return money / (price * Symbol.ContractSize);
         }
 
         private OpenOrderRequest BuildRequest(double volume, double price, OrderSide side)
@@ -172,18 +164,16 @@ namespace _100YearPortfolio
             return money.Gte(0.0) ? OrderSide.Buy : OrderSide.Sell;
         }
 
-        private double GetUsedMoney()
+        private double GetUsedMoney(out double bid, out double ask)
         {
-            static int GetMoneySign(OrderSide side) => side.IsBuy() ? 1 : -1;
+            bid = Symbol.Bid;
+            ask = Symbol.Ask;
 
-            var posSide = Position.Side;
-            var money = Position.Volume * GetPrice(posSide) * GetMoneySign(posSide);
+            var money = Position.Volume * (Position.Side.IsBuy() ? bid : -ask);
 
             foreach (var order in Account.OrdersBySymbol(Name))
             {
-                var orderSide = order.Side;
-
-                money += order.RemainingVolume * GetPrice(orderSide) * GetMoneySign(orderSide);
+                money += order.RemainingVolume * (order.Side.IsBuy() ? bid : -ask);
             }
 
             return money * Symbol.ContractSize;
