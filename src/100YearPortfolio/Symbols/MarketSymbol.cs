@@ -90,12 +90,13 @@ namespace _100YearPortfolio
 
             _bot.PrintDebug($"{Name} money delta = {expectedMoney:F6}");
 
-            await OpenOrderChain(Math.Abs(expectedMoney), expectedMoney > 0 ? bid : ask);
+            await OpenOrderChain(expectedMoney, expectedMoney > 0 ? bid : ask);
         }
 
         private async Task OpenOrderChain(double money, double price)
         {
-            var openVolume = Math.Min(CalculateOpenVolume(money, price), MaxSumLot);
+            var openVolume = Math.Min(CalculateOpenVolume(Math.Abs(money), price), MaxSumLot);
+            var expectedSide = GetExpectedSide(money);
 
             _bot.PrintDebug($"{Name} open volume = {openVolume:F8}, min volume = {Symbol.MinTradeVolume}");
             _bot.PrintDebug($"{Name} try open = {openVolume.Gte(Symbol.MinTradeVolume)}");
@@ -107,7 +108,7 @@ namespace _100YearPortfolio
 
                 while (++attempt < MaxRejectAttempts)
                 {
-                    var res = await _bot.OpenOrderAsync(BuildRequest(curVolume, price, GetExpectedSide(money)));
+                    var res = await _bot.OpenOrderAsync(BuildRequest(curVolume, price, expectedSide));
 
                     if (res.IsCompleted)
                     {
