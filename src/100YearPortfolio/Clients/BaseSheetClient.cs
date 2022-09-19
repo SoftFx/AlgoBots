@@ -56,10 +56,9 @@ namespace _100YearPortfolio.Clients
             return string.IsNullOrEmpty(error);
         }
 
-        internal virtual Task SendStatus(string status)
-        {
-            return Task.CompletedTask;
-        }
+        internal virtual Task SendStatus(string status) => Task.CompletedTask;
+
+        internal virtual Task FlushStatus() => Task.CompletedTask;
 
 
         protected abstract bool TryReadPage(string pageName, out List<List<string>> configStr);

@@ -51,13 +51,9 @@ namespace _100YearPortfolio
 
             _client = ClientFactory.GetClient(SheetLink, CredsFile.FullPath);
 
-            if (TryValidateGlobalState(out var error) || !_client.TryReadConfig(out _config, out error) ||
-                !_client.TryReadPortfolio(this, out _market, out error))
-            {
-                PrintError(error);
-                Status.WriteLine(error);
-                Exit();
-            }
+            if (!TryValidateGlobalState(out var error) || !_client.TryReadConfig(out _config, out error)
+                || !_client.TryReadPortfolio(this, out _market, out error))
+                StopBotWithError(error);
             else
             {
                 _balancePrecision = GetBalanceFormat();
@@ -83,26 +79,27 @@ namespace _100YearPortfolio
 
         private async void UpdateLoop(object _)
         {
-            while (!IsStopped)
-            {
-                await _marketState.Recalculate(UtcNow);
-                await _equityState.Recalculate(UtcNow);
-
-                if (EquityChange.Lt(Config.EquityMinLevel))
+            if (await FlushSheetStatus())
+                while (!IsStopped)
                 {
-                    CriticalLossMoney();
-                    break;
+                    await _marketState.Recalculate(UtcNow);
+                    await _equityState.Recalculate(UtcNow);
+
+                    if (EquityChange.Lt(Config.EquityMinLevel))
+                    {
+                        await CriticalLossMoney();
+                        break;
+                    }
+
+                    var currentStatus = BuildCurrentStatus();
+
+                    Status.WriteLine(currentStatus);
+
+                    await _client.SendStatus(currentStatus);
+                    await Delay(StatusUpdateTimeout);
+
+                    Status.Flush();
                 }
-
-                var currentStatus = BuildCurrentStatus();
-
-                Status.WriteLine(currentStatus);
-
-                await _client.SendStatus(currentStatus);
-                await Delay(StatusUpdateTimeout);
-
-                Status.Flush();
-            }
         }
 
         private string BuildCurrentStatus()
@@ -144,7 +141,7 @@ namespace _100YearPortfolio
             if (Account.Type != AccountTypes.Net)
                 error = $"Only Net account is available";
 
-            return !string.IsNullOrEmpty(error);
+            return string.IsNullOrEmpty(error);
         }
 
         private string GetBalanceFormat()
@@ -154,14 +151,48 @@ namespace _100YearPortfolio
             return $"F{smb.Digits}";
         }
 
-        private void CriticalLossMoney()
+        private async Task CriticalLossMoney()
         {
             Status.Flush();
 
-            Status.WriteLine($"Current Equity change = {EquityChange:F4}%");
-            Status.WriteLine($"{PortfolioConfig.EquityMinLevelSettingName} = {Config.EquityMinLevel}%");
-            Status.WriteLine("Bot has been stopped!");
+            await FlushSheetStatus();
 
+            var sb = new StringBuilder(1 << 10);
+
+            sb.AppendLine($"{UtcNow}").AppendLine()
+              .AppendLine($"Current Equity change = {EquityChange:F4}%")
+              .AppendLine($"{PortfolioConfig.EquityMinLevelSettingName} = {Config.EquityMinLevel}%")
+              .AppendLine("Bot has been stopped!");
+
+            var str = sb.ToString();
+
+            await _client.SendStatus(str);
+
+            Status.WriteLine(str);
+
+            Exit();
+        }
+
+        private async Task<bool> FlushSheetStatus()
+        {
+            try
+            {
+                await _client.FlushStatus();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                StopBotWithError(ex.Message);
+
+                return false;
+            }
+        }
+
+        private void StopBotWithError(string error)
+        {
+            PrintError(error);
+            Status.WriteLine(error);
             Exit();
         }
     }

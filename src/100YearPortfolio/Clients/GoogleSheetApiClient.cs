@@ -1,7 +1,9 @@
 ﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Requests;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
+using static Google.Apis.Sheets.v4.SpreadsheetsResource.ValuesResource;
 
 namespace _100YearPortfolio.Clients
 {
@@ -9,6 +11,7 @@ namespace _100YearPortfolio.Clients
     {
         private static readonly string[] _scopes = { SheetsService.Scope.Spreadsheets };
 
+        private readonly ClearRequest _clearRequest;
         private readonly SheetsService _service;
 
 
@@ -19,6 +22,8 @@ namespace _100YearPortfolio.Clients
                 HttpClientInitializer = GoogleCredential.FromFile(credPath).CreateScoped(_scopes),
                 ApplicationName = PortfolioBot.FullBotName,
             });
+
+            _clearRequest = _service.Spreadsheets.Values.Clear(new ClearValuesRequest(), _spreadSheetId, StatusPage);
         }
 
 
@@ -30,10 +35,13 @@ namespace _100YearPortfolio.Clients
             };
 
             var updateRequest = _service.Spreadsheets.Values.Update(valueRange, _spreadSheetId, StatusPage);
-            updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
+
+            updateRequest.ValueInputOption = UpdateRequest.ValueInputOptionEnum.RAW;
 
             return updateRequest.ExecuteAsync();
         }
+
+        internal override Task FlushStatus() => _clearRequest.ExecuteAsync();
 
 
         protected override bool TryReadPage(string pageName, out List<List<string>> configStr)
