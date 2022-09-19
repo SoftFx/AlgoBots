@@ -7,9 +7,9 @@ namespace _100YearPortfolio.Clients
     {
         private const string SpreadSheetIdRegPattern = @"/d/(.+)/";
 
-        private const string ConfigPage = "Settings";
-        private const string PortfolioPage = "Portfolio";
-        private const string StatusPage = "Status";
+        protected const string ConfigPage = "Settings";
+        protected const string PortfolioPage = "Portfolio";
+        protected const string StatusPage = "Status";
 
         private readonly PortfolioReader _reader = new();
         private readonly string _sheetLink;
@@ -54,6 +54,11 @@ namespace _100YearPortfolio.Clients
                 error = $"Cannot read bot portfolio. Sheet {PortfolioPage}. {error}";
 
             return string.IsNullOrEmpty(error);
+        }
+
+        internal virtual Task SendStatus(string status)
+        {
+            return Task.CompletedTask;
         }
 
 

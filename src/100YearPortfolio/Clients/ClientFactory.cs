@@ -2,12 +2,12 @@
 {
     public static class ClientFactory
     {
-        internal static BaseSheetClient GetClient(string link, string apiKey)
+        internal static BaseSheetClient GetClient(string link, string credsPath)
         {
-            if (string.IsNullOrEmpty(apiKey))
+            if (string.IsNullOrEmpty(credsPath))
                 return new HttpSheetClient(link);
             else
-                return new GoogleSheetApiClient(link, apiKey);
+                return new GoogleSheetApiClient(link, credsPath);
         }
     }
 }

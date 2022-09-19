@@ -1,21 +1,38 @@
-﻿using Google.Apis.Services;
+﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
+using Google.Apis.Sheets.v4.Data;
 
 namespace _100YearPortfolio.Clients
 {
     internal sealed class GoogleSheetApiClient : BaseSheetClient
     {
+        private static readonly string[] _scopes = { SheetsService.Scope.Spreadsheets };
+
         private readonly SheetsService _service;
 
 
-        internal GoogleSheetApiClient(string link, string apiKey) : base(link)
+        internal GoogleSheetApiClient(string link, string credPath) : base(link)
         {
             _service = new SheetsService(new BaseClientService.Initializer
             {
-                ApiKey = apiKey,
+                HttpClientInitializer = GoogleCredential.FromFile(credPath).CreateScoped(_scopes),
                 ApplicationName = PortfolioBot.FullBotName,
             });
+        }
 
+
+        internal override Task SendStatus(string status)
+        {
+            var valueRange = new ValueRange
+            {
+                Values = status.Split(Environment.NewLine).Select(u => (IList<object>)new List<object>(1) { u }).ToList(),
+            };
+
+            var updateRequest = _service.Spreadsheets.Values.Update(valueRange, _spreadSheetId, StatusPage);
+            updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
+
+            return updateRequest.ExecuteAsync();
         }
 
 

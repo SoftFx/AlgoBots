@@ -4,6 +4,7 @@ using SoftFx;
 using System.Text;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
+using File = TickTrader.Algo.Api.File;
 
 namespace _100YearPortfolio
 {
@@ -18,14 +19,12 @@ namespace _100YearPortfolio
         [Parameter]
         public bool UseDebug { get; set; }
 
-        //[Parameter(DefaultValue = "AIzaSyDFPzNAaQgYaWUHuKUSLAHnlumB_rLT2CA")]
-        [Parameter]
-        public string ApiKey { get; set; }
-
-
-        //[Parameter(DefaultValue = "https://docs.google.com/spreadsheets/d/1VstuuH9WYRDlUpNiagz026C6gfYwUFoOVuR8I5XJCgw/edit#gid=0")]
         [Parameter]
         public string SheetLink { get; set; }
+
+        [Parameter(IsRequired = false)]
+        [FileFilter("Creds file (*.json)", "*.json")]
+        public File CredsFile { get; set; }
 
 
         internal PortfolioConfig Config => _config;
@@ -50,7 +49,7 @@ namespace _100YearPortfolio
         {
             _lastCalculatedEquity = Account.Equity;
 
-            _client = ClientFactory.GetClient(SheetLink, ApiKey);
+            _client = ClientFactory.GetClient(SheetLink, CredsFile.FullPath);
 
             if (TryValidateGlobalState(out var error) || !_client.TryReadConfig(out _config, out error) ||
                 !_client.TryReadPortfolio(this, out _market, out error))
@@ -86,10 +85,6 @@ namespace _100YearPortfolio
         {
             while (!IsStopped)
             {
-                var currentStatus = BuildCurrentStatus();
-
-                Status.WriteLine(currentStatus);
-
                 await _marketState.Recalculate(UtcNow);
                 await _equityState.Recalculate(UtcNow);
 
@@ -99,8 +94,11 @@ namespace _100YearPortfolio
                     break;
                 }
 
-                Status.WriteLine(BuildDeltaInfo());
+                var currentStatus = BuildCurrentStatus();
 
+                Status.WriteLine(currentStatus);
+
+                await _client.SendStatus(currentStatus);
                 await Delay(StatusUpdateTimeout);
 
                 Status.Flush();
@@ -117,16 +115,8 @@ namespace _100YearPortfolio
               .AppendLine($"{nameof(Account.Balance)} = {Account.Balance.ToString(_balancePrecision)}")
               .AppendLine($"{nameof(Account.Equity)} = {Account.Equity.ToString(_balancePrecision)}")
               .AppendLine()
-              .AppendLine($"{_market}");
-
-            return sb.ToString();
-        }
-
-        private string BuildDeltaInfo()
-        {
-            var sb = new StringBuilder(1 << 5);
-
-            sb.AppendLine($"Saved equity = {_lastCalculatedEquity:F4}, equity change: {EquityChange:F4}%")
+              .AppendLine($"{_market}")
+              .AppendLine($"Saved equity = {_lastCalculatedEquity:F4}, equity change: {EquityChange:F4}%")
               .AppendLine($"Resave equity value after {_equityState.GetLeftTime(UtcNow)} sec...")
               .AppendLine()
               .AppendLine($"Recalculation symbols after {_marketState.GetLeftTime(UtcNow)} sec...");
