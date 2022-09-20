@@ -11,7 +11,6 @@ namespace _100YearPortfolio
     [TradeBot(DisplayName = FullBotName, Category = CommonConstants.Category, Version = "1.0")]
     public class PortfolioBot : TradeBot
     {
-        private const int StatusUpdateTimeout = 1000;
         private const int ErrorTimeout = 30000;
 
         public const string FullBotName = "100YearPortfolioBot";
@@ -20,7 +19,7 @@ namespace _100YearPortfolio
         [Parameter]
         public bool UseDebug { get; set; }
 
-        [Parameter]
+        [Parameter(IsRequired = true)]
         public string SheetLink { get; set; }
 
         [Parameter(IsRequired = false)]
@@ -99,7 +98,7 @@ namespace _100YearPortfolio
                         Status.WriteLine(currentStatus);
 
                         await _client.SendStatus(currentStatus);
-                        await Delay(StatusUpdateTimeout);
+                        await Delay(Config.StatusUpdateTimeoutSec * 1000);
 
                         Status.Flush();
                     }
@@ -123,7 +122,7 @@ namespace _100YearPortfolio
               .AppendLine($"{nameof(Account.Equity)} = {Account.Equity.ToString(_balancePrecision)}")
               .AppendLine()
               .AppendLine($"{_market}")
-              .AppendLine($"Saved equity = {_lastCalculatedEquity:F4}, equity change: {EquityChange:F4}%")
+              .AppendLine($"Saved equity = {_lastCalculatedEquity.ToString(_balancePrecision)}, equity change: {EquityChange:F2}%")
               .AppendLine($"Resave equity value after {_equityState.GetLeftTime(UtcNow)} sec...")
               .AppendLine()
               .AppendLine($"Recalculation symbols after {_marketState.GetLeftTime(UtcNow)} sec...");
@@ -170,7 +169,7 @@ namespace _100YearPortfolio
             var sb = new StringBuilder(1 << 10);
 
             sb.AppendLine($"{UtcNow}").AppendLine()
-              .AppendLine($"Current Equity change = {EquityChange:F4}%")
+              .AppendLine($"Current Equity change = {EquityChange:F2}%")
               .AppendLine($"{PortfolioConfig.EquityMinLevelSettingName} = {Config.EquityMinLevel}%")
               .AppendLine("Bot has been stopped!");
 

@@ -70,8 +70,8 @@ namespace _100YearPortfolio
 
             _sb.Clear()
                .Append($"{nameof(MaxSumLot)} = {MaxSumLot}, ")
-               .Append($"expected = {Percent:F4}%, ")
-               .Append($"delta = {deltaPercent:F8}% ({deltaLots:F4} lots)");
+               .Append($"expected = {Percent:F2}%, ")
+               .Append($"delta = {deltaPercent:F2}% ({deltaLots:0.#####} lots)");
 
             if (_bot.UseDebug)
                 _sb.Append($", rate {bid}/{ask}");

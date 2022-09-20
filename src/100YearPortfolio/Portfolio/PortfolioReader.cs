@@ -17,6 +17,7 @@ namespace _100YearPortfolio
             EquityMinLevelSettingName,
             EquityUpdateTimeName,
             DefaultMaxLotSizeSettingName,
+            StatusUpdateTimeoutName
         };
 
 
@@ -27,7 +28,8 @@ namespace _100YearPortfolio
             error = null;
             config = null;
 
-            var updateHours = 1;
+            var updateMin = 1;
+            var updateStatusSec = 1;
             var minEquityLevel = 0.0;
             var equituUpdateTime = 0;
             var defaultMaxLotSize = 0.0;
@@ -41,7 +43,8 @@ namespace _100YearPortfolio
 
                     var ok = settingName switch
                     {
-                        UpdateMinSettingName => int.TryParse(valueStr, out updateHours),
+                        UpdateMinSettingName => int.TryParse(valueStr, out updateMin),
+                        StatusUpdateTimeoutName => int.TryParse(valueStr, out updateStatusSec),
                         BalanceTypeSettingName => Enum.TryParse(valueStr, true, out balanceType),
                         EquityMinLevelSettingName => TryReadPercent(valueStr, out minEquityLevel),
                         EquityUpdateTimeName => int.TryParse(valueStr, out equituUpdateTime),
@@ -58,7 +61,8 @@ namespace _100YearPortfolio
             {
                 config = new PortfolioConfig
                 {
-                    UpdateMinutes = updateHours,
+                    UpdateMinutes = updateMin,
+                    StatusUpdateTimeoutSec = updateStatusSec,
                     BalanceType = balanceType,
                     EquityMinLevel = minEquityLevel,
                     EquityUpdateTime = equituUpdateTime,
