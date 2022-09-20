@@ -12,6 +12,7 @@ namespace _100YearPortfolio
     public class PortfolioBot : TradeBot
     {
         private const int StatusUpdateTimeout = 1000;
+        private const int ErrorTimeout = 30000;
 
         public const string FullBotName = "100YearPortfolioBot";
 
@@ -82,23 +83,32 @@ namespace _100YearPortfolio
             if (await FlushSheetStatus())
                 while (!IsStopped)
                 {
-                    await _marketState.Recalculate(UtcNow);
-                    await _equityState.Recalculate(UtcNow);
-
-                    if (EquityChange.Lt(Config.EquityMinLevel))
+                    try
                     {
-                        await CriticalLossMoney();
-                        break;
+                        await _marketState.Recalculate(UtcNow);
+                        await _equityState.Recalculate(UtcNow);
+
+                        if (EquityChange.Lt(Config.EquityMinLevel))
+                        {
+                            await CriticalLossMoney();
+                            break;
+                        }
+
+                        var currentStatus = BuildCurrentStatus();
+
+                        Status.WriteLine(currentStatus);
+
+                        await _client.SendStatus(currentStatus);
+                        await Delay(StatusUpdateTimeout);
+
+                        Status.Flush();
                     }
+                    catch (Exception ex)
+                    {
+                        PrintError(ex.Message);
 
-                    var currentStatus = BuildCurrentStatus();
-
-                    Status.WriteLine(currentStatus);
-
-                    await _client.SendStatus(currentStatus);
-                    await Delay(StatusUpdateTimeout);
-
-                    Status.Flush();
+                        await Delay(ErrorTimeout);
+                    }
                 }
         }
 
