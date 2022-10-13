@@ -10,6 +10,7 @@ Is the equity loss is critical the bot will be stopped.
 
 ## Required Links
 **For bot running you have to create Google Sheet with Configuration.**
+
 Template for Google Sheet Configuration is here (ссылка)
 
 Guide how to create Google Sheet and setup it is here (ссылка)
@@ -72,10 +73,10 @@ Current page consists stock distribution and has 3 columns: Symbol, Distribution
 A name of the symbol, which will be used to open orders and positions. String value.
 
 #### **Distribution**
-A percentage of money from the account balance for opening orders. Double percent parameter (can be written as 10 or 10%). If value is positive value than orders and positions side is Buy else Sell. **Total sum absolute values of column should be less than 100%**
+A percentage of money from the account balance for opening orders. Double percent parameter (can be written as 10 or 10%). If value is positive value than positions side is Buy else Sell. **Total sum absolute values of column should be less than 100%**
 
 #### **MaxLotsSum**
-A maximum volume amount that can be opened by Symbol. Double value. If value isn't specified the **Default Max Lots Sum** will be applied.
+A maximum volume amount that can be opened by Symbol. Double value. If value isn't specified the **Default Max Lots Sum** will be applied. Should be greater than 0.
 
 ## **Filling rules**
 - The order of records isn't important
