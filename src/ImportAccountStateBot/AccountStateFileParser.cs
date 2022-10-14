@@ -18,11 +18,10 @@ namespace ImportAccountStateBot
         private readonly string _stateFilePath;
         private readonly string _defaultHeader;
 
-        public bool HasNewData => System.IO.File.GetLastWriteTimeUtc(_stateFilePath) != LastReadTime;
+        private DateTime _lastReadTime;
+        private int _fileLinesRead;
 
-        public int FileLinesRead { get; private set; }
-
-        public DateTime LastReadTime { get; private set; }
+        public bool HasNewData => System.IO.File.GetLastWriteTimeUtc(_stateFilePath) != _lastReadTime;
 
 
         public AccountStateFileParser(ImportAccountStateBot bot)
@@ -34,7 +33,7 @@ namespace ImportAccountStateBot
             _separator = new string[] { _config.Separator };
             _defaultHeader = string.Join(_config.Separator, new string[] { "Time", "Symbol", "Side (Buy - true, Sell - false)", "Volume" });
 
-            FileLinesRead = _config.SkipFirstLine ? 1 : 0;  //skip .csv file headers
+            _fileLinesRead = _config.SkipFirstLine ? 1 : 0;  //skip .csv file headers
 
             CheckOrCreateStateFile();
         }
@@ -56,17 +55,23 @@ namespace ImportAccountStateBot
             {
                 using (var fs = new FileStream(file, FileMode.Open))
                 {
-                    using (var sr = new StreamReader(fs))
-                    {
-                        for (int i = 0; i < FileLinesRead; ++i) //skip read lines
-                            sr.ReadLine();
+                    using var sr = new StreamReader(fs);
 
-                        while (!sr.EndOfStream)
-                            states.Add(ParseStringToPosition(ReadLineAndUpdateCounter(sr)));
+                    for (int i = 0; i < _fileLinesRead; ++i) //skip read lines
+                        sr.ReadLine();
+
+                    while (!sr.EndOfStream)
+                    {
+                        _fileLinesRead++;
+
+                        var str = sr.ReadLine();
+
+                        if (!string.IsNullOrEmpty(str))
+                            states.Add(ParseStringToPosition(str));
                     }
                 }
 
-                LastReadTime = System.IO.File.GetLastWriteTimeUtc(_stateFilePath);
+                _lastReadTime = System.IO.File.GetLastWriteTimeUtc(_stateFilePath);
             }
             catch (Exception ex)
             {
@@ -76,12 +81,6 @@ namespace ImportAccountStateBot
             return states;
         }
 
-        private string ReadLineAndUpdateCounter(StreamReader sr)
-        {
-            FileLinesRead++;
-
-            return sr.ReadLine();
-        }
 
         private void CheckOrCreateStateFile()
         {
@@ -89,8 +88,9 @@ namespace ImportAccountStateBot
             {
                 using (var fw = new FileStream(_stateFilePath, FileMode.Create))
                 {
-                    using (var sw = new StreamWriter(fw))
-                        sw.WriteLine(_defaultHeader);
+                    using var sw = new StreamWriter(fw);
+
+                    sw.WriteLine(_defaultHeader);
                 }
 
                 _bot.PrintError($"File {_stateFilePath} not found. Empty file has been created");
