@@ -90,7 +90,7 @@ namespace MovingAverageBot
 
             string message = $"";
 
-            message += $"Price for 1 volume = {margin:F8} , Contract size = {Symbol.ContractSize}, price = {Symbol.Ask} \n";
+            message += $"Margin = {margin:F8} , Contract size = {Symbol.ContractSize}, price = {Symbol.Ask} \n";
             message += $"Account margin = {Account.Margin}, balance = {Account.Balance}, account free margin = {Account.Balance - Account.Margin} \n";
 
             double lot = ((Account.Balance - Account.Margin) * MaximumRisk / margin.Value).Round(Symbol.TradeVolumeStep);
@@ -195,8 +195,10 @@ namespace MovingAverageBot
         {
             CalculateCurrentLoseStreak(position.Profit);
 
-            if (OpenMarketOrder(position.Side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy, position.Volume).ResultCode == OrderCmdResultCodes.Ok)
-                Print($"Close volume = {position.Volume}");
+            var closeVolume = position.Volume;
+
+            if (OpenMarketOrder(position.Side.Inversed(), closeVolume).ResultCode == OrderCmdResultCodes.Ok)
+                Print($"Close volume = {closeVolume}");
         }
 
         private void CloseCurrentOrderForGross(Order order)
