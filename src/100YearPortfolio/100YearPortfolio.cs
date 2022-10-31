@@ -70,6 +70,8 @@ namespace _100YearPortfolio
                     RecalculateAction = RememberEquity,
                 };
 
+                Account.BalanceUpdated += Account_BalanceUpdated;
+
                 ThreadPool.QueueUserWorkItem(UpdateLoop);
             }
         }
@@ -130,6 +132,8 @@ namespace _100YearPortfolio
             return sb.ToString();
         }
 
+        private void Account_BalanceUpdated() => _marketState.Recalculate(UtcNow);
+
         internal void PrintDebug(string msg)
         {
             if (UseDebug)
@@ -177,9 +181,9 @@ namespace _100YearPortfolio
 
             await _client.SendStatus(str);
 
-            Status.WriteLine(str);
+            Alert.Print(str);
 
-            Exit();
+            StopBotWithError(str);
         }
 
         private async Task<bool> FlushSheetStatus()
@@ -200,6 +204,8 @@ namespace _100YearPortfolio
 
         private void StopBotWithError(string error)
         {
+            Account.BalanceUpdated -= Account_BalanceUpdated;
+
             PrintError(error);
             Status.WriteLine(error);
             Exit();
