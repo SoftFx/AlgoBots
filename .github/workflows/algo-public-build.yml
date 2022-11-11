@@ -6,10 +6,8 @@ on:
   workflow_dispatch:
     inputs:
       isPreRelease:
-        description: 'PreRelease'
-        type: boolean
-        required: true
-        default: false
+        description: 'Release version'
+        type: string
 env:
   OUTPUT_FOLDER: ${{ github.workspace }}/BuildOutput
 
