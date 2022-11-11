@@ -25,7 +25,6 @@ namespace MovingAverageBot
         private int _losses = 0;
         private DateTime _openTimeLastBar = DateTime.MinValue;
 
-        private DateTime _workTime = DateTime.MinValue; // for testing
 
         protected override void Init()
         {
@@ -44,14 +43,8 @@ namespace MovingAverageBot
             OutputParametrsOnStatus();
             OutputParametrsOnLog();
             _iMA = Indicators.MovingAverage(Bars.Close, MovingPeriod, MovingShift);
-
-            _workTime = DateTime.Now; // for test
         }
 
-        protected override void OnStop()
-        {
-            Print($"Work time: {(DateTime.Now - _workTime).TotalSeconds:F4}");
-        }
 
         protected override void OnQuote(Quote quote)
         {

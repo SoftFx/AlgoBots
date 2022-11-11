@@ -5,13 +5,16 @@
 var target = ConsoleOrBuildSystemArgument("Target", "Build");
 var buildNumber = ConsoleOrBuildSystemArgument("BuildNumber", 0);
 var configuration = ConsoleOrBuildSystemArgument("Configuration", "Release");
-var sourcesDir = ConsoleOrBuildSystemArgument("SourcesDir", "./");
+var sourcesDir = ConsoleOrBuildSystemArgument("SourcesDir", "..");
+var buildDir = ConsoleOrBuildSystemArgument("BuildDir", "./");
 var artifactsDirName = ConsoleOrBuildSystemArgument("ArtifactsDirName", "build.output");
 var details = ConsoleOrBuildSystemArgument<DotNetVerbosity>("Details", DotNetVerbosity.Detailed);
 
 var sourcesPath = DirectoryPath.FromString(sourcesDir);
-var artifactsPath = sourcesPath.Combine(artifactsDirName);
-var projectPath = sourcesPath.Combine("src").Combine("Repository.Public.sln");
+var projectPath = sourcesPath.Combine("Repository.Public.sln");
+
+var buildPath = DirectoryPath.FromString(buildDir);
+var artifactsPath = buildPath.Combine(artifactsDirName);
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
@@ -20,7 +23,7 @@ var projectPath = sourcesPath.Combine("src").Combine("Repository.Public.sln");
 Setup(ctx =>
 {
     var exitCode = StartProcess("dotnet", new ProcessSettings {
-        WorkingDirectory = sourcesPath.Combine("src"),
+        WorkingDirectory = sourcesPath,
         Arguments = "--info"
     });
 
@@ -85,6 +88,7 @@ public void PrintArguments()
     Information("BuildNumber: {0}", buildNumber);
     Information("Configuration: {0}", configuration);
     Information("SourcesDir: {0}", sourcesDir);
+    Information("BuildDir: {0}", buildDir);
     Information("ArtifactsDirName: {0}", artifactsDirName);
     Information("Details: {0}", details);
 }
