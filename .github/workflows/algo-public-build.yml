@@ -1,7 +1,8 @@
-name: HSMServer build
+name: AlgoPublic build
 on:
-  # push:
-  #   branches: [master]
+  push:
+    branches: [develop]
+    # branches: [master]
 
   workflow_dispatch:
     inputs:
@@ -18,8 +19,8 @@ jobs:
       VERSION: ${{ steps.save-version.outputs.version }}
       ARTIFACT_NAME: ${{ steps.build-artifact-name.outputs.name}}
     env:
-      SolutionPath: src/server/HSMServer/HSMServer.sln
-      ServerPath: src/server/HSMServer/HSMServer.csproj
+      SolutionPath: ./Repository.Public.sln
+      BuildScriptPath: .build/build.ps1
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET Core
@@ -27,31 +28,33 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
-    - name: Install dependencies
-      run: dotnet restore ${{ env.SolutionPath }}
+    name: Run PowerShell script
+    run: ${{env.BuildScriptPath}}
+    # - name: Install dependencies
+    #   run: dotnet restore ${{ env.SolutionPath }}
 
-    - name: Build Solution
-      run: dotnet build ${{ env.SolutionPath }} -c Release --no-restore
+    # - name: Build Solution
+    #   run: dotnet build ${{ env.SolutionPath }} -c Release --no-restore
 
-    - name: Test Solution
-      run: dotnet test ${{ env.SolutionPath }}
+    # - name: Test Solution
+    #   run: dotnet test ${{ env.SolutionPath }}
 
-    - name: Build HSMServer
-      run: dotnet build ${{ env.ServerPath }} -c Release -o ${{ env.OUTPUT_FOLDER }}
+    # - name: Build HSMServer
+    #   run: dotnet build ${{ env.ServerPath }} -c Release -o ${{ env.OUTPUT_FOLDER }}
 
-    - id: save-version
-      name: Try to get server version
-      run: echo "::set-output name=version::$((Get-Item ${{ env.OUTPUT_FOLDER }}/HSMServer.exe).VersionInfo.ProductVersion)"
+    # - id: save-version
+    #   name: Try to get server version
+    #   run: echo "::set-output name=version::$((Get-Item ${{ env.OUTPUT_FOLDER }}/HSMServer.exe).VersionInfo.ProductVersion)"
 
-    - id: build-artifact-name
-      name: Build artifact name
-      run: echo "::set-output name=name::HSMServer v${{ steps.save-version.outputs.version }}"
+    # - id: build-artifact-name
+    #   name: Build artifact name
+    #   run: echo "::set-output name=name::HSMServer v${{ steps.save-version.outputs.version }}"
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        path: ${{ env.OUTPUT_FOLDER }}
-        name: ${{ steps.build-artifact-name.outputs.name }}
+    # - name: Upload artifact
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     path: ${{ env.OUTPUT_FOLDER }}
+    #     name: ${{ steps.build-artifact-name.outputs.name }}
 
 
   create-tag:
