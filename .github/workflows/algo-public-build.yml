@@ -28,8 +28,8 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
-    name: Run PowerShell script
-    run: ${{env.BuildScriptPath}}
+    - name: Run PowerShell script
+      run: ${{env.BuildScriptPath}}
     # - name: Install dependencies
     #   run: dotnet restore ${{ env.SolutionPath }}
 
