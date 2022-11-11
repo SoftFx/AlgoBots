@@ -10,51 +10,27 @@ on:
         description: 'Release version'
         type: string
 env:
-  OUTPUT_FOLDER: ${{ github.workspace }}/BuildOutput
+  BUILD_OUTPUT_FOLDER: .build/build.output
 
 jobs:
   build:
     runs-on: windows-latest
-    outputs:
-      VERSION: ${{ steps.save-version.outputs.version }}
-      ARTIFACT_NAME: ${{ steps.build-artifact-name.outputs.name}}
     env:
-      SolutionPath: ./Repository.Public.sln
       BuildScriptPath: .build/build.ps1
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
 
     - name: Run PowerShell script
       run: ${{env.BuildScriptPath}}
-    # - name: Install dependencies
-    #   run: dotnet restore ${{ env.SolutionPath }}
 
-    # - name: Build Solution
-    #   run: dotnet build ${{ env.SolutionPath }} -c Release --no-restore
-
-    # - name: Test Solution
-    #   run: dotnet test ${{ env.SolutionPath }}
-
-    # - name: Build HSMServer
-    #   run: dotnet build ${{ env.ServerPath }} -c Release -o ${{ env.OUTPUT_FOLDER }}
-
-    # - id: save-version
-    #   name: Try to get server version
-    #   run: echo "::set-output name=version::$((Get-Item ${{ env.OUTPUT_FOLDER }}/HSMServer.exe).VersionInfo.ProductVersion)"
-
-    # - id: build-artifact-name
-    #   name: Build artifact name
-    #   run: echo "::set-output name=name::HSMServer v${{ steps.save-version.outputs.version }}"
-
-    # - name: Upload artifact
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     path: ${{ env.OUTPUT_FOLDER }}
-    #     name: ${{ steps.build-artifact-name.outputs.name }}
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        path: ${{ env.BUILD_OUTPUT_FOLDER }}
 
 
   create-tag:
