@@ -60,6 +60,7 @@ jobs:
     needs: [build, create-tag]
     env:
       ReleaseNote: "ReleaseNote.md"
+      GithubToken: ${{ secrets.RELEASE_TOKEN }}
     steps:
       - uses: actions/checkout@v3
 
@@ -74,7 +75,7 @@ jobs:
         with:
           name: ${{ needs.create-tag.outputs.BUILD_TAG }}
           tag: ${{ needs.create-tag.outputs.BUILD_TAG }}
-          token: ${{ secrets.RELEASE_TOKEN }}
+          token: ${{ env.GithubToken }}
           artifacts: ${{ env.BUILD_OUTPUT_FOLDER }}
           bodyFile: ${{ env.ReleaseNote }}
           allowUpdates: true
