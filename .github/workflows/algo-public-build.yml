@@ -9,13 +9,13 @@ on:
         description: 'Release version'
         type: string
 env:
+  ARTIFACT_NAME: 'Algo PublicBots'
   BUILD_OUTPUT_FOLDER: .build/build.output
 
 jobs:
   build:
     runs-on: windows-latest
     env:
-      ArtifactName: 'Algo PublicBots'
       BuildScriptPath: .build/build.ps1
     steps:
     - uses: actions/checkout@v3
@@ -30,7 +30,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.ArtifactName }}
+        name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_OUTPUT_FOLDER }}
 
 
@@ -55,40 +55,26 @@ jobs:
           force_push_tag: true
 
 
-  # create-release:
-  #   runs-on: ubuntu-latest
-  #   needs: [build, create-tag]
-  #   env:
-  #     ReleaseNote: "ReleaseNote.md"
-  #   steps:
-  #     - uses: actions/checkout@v3
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [build, create-tag]
+    env:
+      ReleaseNote: "ReleaseNote.md"
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Download artifacts
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: ${{ needs.build.outputs.ARTIFACT_NAME }}
-  #         path: ${{ env.OUTPUT_FOLDER }}
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.BUILD_OUTPUT_FOLDER }}
 
-  #     - name: Create archive name
-  #       run: echo "ArtifactZip=HSMServer-${{ needs.build.outputs.VERSION }}.zip" >> $GITHUB_ENV
-
-  #     - name: Check archive name
-  #       run: echo $ArtifactZip
-
-  #     - name: Archive artifacts
-  #       uses: thedoctor0/zip-release@main
-  #       with:
-  #         type: 'zip'
-  #         path: ${{ env.OUTPUT_FOLDER }}
-  #         filename: ${{ env.ArtifactZip }}
-
-  #     - name: Create release
-  #       uses: ncipollo/release-action@v1
-  #       with:
-  #         name: ${{ needs.build.outputs.ARTIFACT_NAME }}
-  #         tag: ${{ needs.create-tag.outputs.BUILD_TAG }}
-  #         token: ${{ secrets.GITHUB_TOKEN }}
-  #         artifacts: ${{ env.ArtifactZip }}
-  #         prerelease: ${{ github.event.inputs.isPreRelease }}
-  #         bodyFile: ${{ env.ReleaseNote }}
-  #         allowUpdates: true
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          name: ${{ needs.create-tag.outputs.BUILD_TAG }}
+          tag: ${{ needs.create-tag.outputs.BUILD_TAG }}
+          token: ${{ secrets.RELEASE_TOKEN }}
+          artifacts: ${{ env.BUILD_OUTPUT_FOLDER }}
+          bodyFile: ${{ env.ReleaseNote }}
+          allowUpdates: true
