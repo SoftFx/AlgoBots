@@ -1,5 +1,7 @@
 name: AlgoPublic build
-run-name: AlgoPublic build v.${{ inputs.releaseVersion}} by @${{ github.actor }}
+run-name:
+  if: ${{ inputs.releaseVersion != '' }}
+    AlgoPublic build v.${{ inputs.releaseVersion}}
 on:
   push:
     branches: [master,develop]
