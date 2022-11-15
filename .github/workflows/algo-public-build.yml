@@ -1,4 +1,5 @@
 name: AlgoPublic build
+run-name: AlgoPublic build v.${{ inputs.releaseVersion}} by @${{ github.actor }}
 on:
   push:
     branches: [master,develop]
