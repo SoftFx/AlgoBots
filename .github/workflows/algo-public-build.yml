@@ -76,6 +76,6 @@ jobs:
           name: ${{ needs.create-tag.outputs.BUILD_TAG }}
           tag: ${{ needs.create-tag.outputs.BUILD_TAG }}
           token: ${{ env.GithubToken }}
-          artifacts: ${{ env.BUILD_OUTPUT_FOLDER }}
+          artifacts: ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo
           bodyFile: ${{ env.ReleaseNote }}
           allowUpdates: true
