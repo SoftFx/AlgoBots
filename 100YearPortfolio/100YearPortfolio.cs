@@ -8,7 +8,7 @@ using File = TickTrader.Algo.Api.File;
 
 namespace _100YearPortfolio
 {
-    [TradeBot(DisplayName = FullBotName, Category = CommonConstants.Category, Version = "1.0")]
+    [TradeBot(DisplayName = FullBotName, Category = "SoftFX Public", Version = "1.0")]
     public class PortfolioBot : TradeBot
     {
         private const int ErrorTimeout = 30000;
