@@ -37,8 +37,6 @@ namespace _100YearPortfolio
 
         public MarketSymbol(PortfolioBot bot, string symbol, double percent, double? maxLotSum)
         {
-            static string SmallValueMessage(string name, double min = 0.0) => $"{name} less than {min}!";
-
             _bot = bot;
 
             Name = symbol;
@@ -48,7 +46,7 @@ namespace _100YearPortfolio
             if (_bot.Symbols[symbol].IsNull)
                 _status = "Not found!";
             else if (MaxSumLot.Lt(Symbol.MinTradeVolume))
-                _status = SmallValueMessage(nameof(MaxSumLot), Symbol.MinTradeVolume);
+                _status = $"{nameof(MaxSumLot)} less than {Symbol.MinTradeVolume}!";
             else
             {
                 _isExist = true;
@@ -95,32 +93,27 @@ namespace _100YearPortfolio
 
         private async Task OpenOrderChain(double money, double price)
         {
-            var openVolume = Math.Min(CalculateOpenVolume(Math.Abs(money), price), MaxSumLot);
-            var expectedSide = GetExpectedSide(money);
+            var expectedVolume = Math.Min(CalculateOpenVolume(Math.Abs(money), price), MaxSumLot);
+            var expectedSide = money.Gte(0.0) ? OrderSide.Buy : OrderSide.Sell;
 
-            _bot.PrintDebug($"{Name} open volume = {openVolume:F8}, min volume = {Symbol.MinTradeVolume}");
-            _bot.PrintDebug($"{Name} try open = {openVolume.Gte(Symbol.MinTradeVolume)}");
+            _bot.PrintDebug($"{Name} expected volume = {expectedVolume:F8}, min volume = {Symbol.MinTradeVolume}");
+            _bot.PrintDebug($"{Name} try open = {expectedVolume.Gte(Symbol.MinTradeVolume)}");
 
-            while (openVolume.Gte(Symbol.MinTradeVolume))
+            if (expectedVolume.Gte(Symbol.MinTradeVolume))
             {
-                var curVolume = Math.Min(openVolume, Symbol.MaxTradeVolume);
+                expectedVolume = Math.Min(expectedVolume, Symbol.MaxTradeVolume);
+
                 var attempt = 0;
 
                 while (++attempt < MaxRejectAttempts)
                 {
-                    var res = await _bot.OpenOrderAsync(BuildRequest(curVolume, price, expectedSide));
+                    var res = await _bot.OpenOrderAsync(BuildRequest(expectedVolume, price, expectedSide));
 
                     if (res.IsCompleted)
-                    {
-                        openVolume -= res.ResultingOrder.RemainingVolume;
                         break;
-                    }
                     else
                         await _bot.Delay(DelayBetweenFailedRequests);
                 }
-
-                if (attempt == MaxRejectAttempts)
-                    return;
             }
         }
 
@@ -155,19 +148,6 @@ namespace _100YearPortfolio
             return money / (price * Symbol.ContractSize);
         }
 
-        private OpenOrderRequest BuildRequest(double volume, double price, OrderSide side)
-        {
-            return OpenOrderRequest.Template.Create()
-                                   .WithParams(Name, side, BaseType, volume, price, null)
-                                   .WithExpiration(_bot.UtcNow.AddHours(_bot.Config.UpdateMinutes + 1))
-                                   .MakeRequest();
-        }
-
-        private static OrderSide GetExpectedSide(double money)
-        {
-            return money.Gte(0.0) ? OrderSide.Buy : OrderSide.Sell;
-        }
-
         private double GetUsedMoney(out double bid, out double ask)
         {
             bid = Symbol.Bid;
@@ -181,6 +161,14 @@ namespace _100YearPortfolio
             }
 
             return money * Symbol.ContractSize;
+        }
+
+        private OpenOrderRequest BuildRequest(double volume, double price, OrderSide side)
+        {
+            return OpenOrderRequest.Template.Create()
+                                   .WithParams(Name, side, BaseType, volume, price, null)
+                                   .WithExpiration(_bot.UtcNow.AddHours(_bot.Config.UpdateMinutes + 1))
+                                   .MakeRequest();
         }
     }
 }
