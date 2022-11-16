@@ -5,7 +5,7 @@ using TickTrader.Algo.Api.Indicators;
 
 namespace MACDsampleBot
 {
-    [TradeBot(DisplayName = "MACDsampleBot", Category = CommonConstants.Category, Version = "1.1")]
+    [TradeBot(DisplayName = "MACDsampleBot", Category = "SoftFX Public", Version = "1.1")]
     public class MACDsampleBot : TradeBot
     {
         [Parameter(DisplayName = "TakeProfit", DefaultValue = 50)]
@@ -136,7 +136,7 @@ namespace MACDsampleBot
         {
             var margin = GetCurrentMargin(side);
 
-            return margin.HasValue ? (Account.Balance - Account.Margin) > margin * Lots : false;
+            return margin.HasValue && (Account.Balance - Account.Margin) > margin * Lots;
         }
 
         private void OutputParametrs()
