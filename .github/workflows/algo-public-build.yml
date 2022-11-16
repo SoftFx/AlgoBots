@@ -1,7 +1,5 @@
 name: AlgoPublic build
-run-name:
-  if: ${{ inputs.releaseVersion != '' }}
-    AlgoPublic build v.${{ inputs.releaseVersion}}
+run-name: AlgoPublic build ${{inputs.releaseVersion != '' && v.${{ inputs.releaseVersion}} || 'push'}}
 on:
   push:
     branches: [master,develop]
