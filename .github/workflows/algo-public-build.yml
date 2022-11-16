@@ -7,7 +7,6 @@ on:
   workflow_dispatch:
     inputs:
       releaseVersion:
-        default: 'push'
         description: 'Release version'
         type: string
 env:
