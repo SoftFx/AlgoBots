@@ -93,15 +93,20 @@ namespace _100YearPortfolio
                 {
                     var line = portfolioStr[lineNumber];
 
-                    if (line.Count < 2)
+                    if (line.Count < 1)
                         throw new Exception($"Invalid line format.");
 
                     var symbolName = line[0];
-                    var percentStr = line[1];
                     var maxSumLot = (double?)null;
+                    var percent = 0.0;
 
-                    if (!TryReadPercent(percentStr, out var percent))
-                        throw new Exception($"Incorrect {PercentNameHeader} = {percentStr}.");
+                    if (line.Count > 1 && !string.IsNullOrEmpty(line[1]))
+                    {
+                        var percentStr = line[1];
+
+                        if (!TryReadPercent(percentStr, out percent))
+                            throw new Exception($"Incorrect {PercentNameHeader} = {percentStr}.");
+                    }
 
                     if (line.Count > 2 && !string.IsNullOrEmpty(line[2]))
                     {
@@ -129,7 +134,7 @@ namespace _100YearPortfolio
                 error = ex.Message;
 
                 if (lineNumber < portfolioStr.Count)
-                    error += $" Line #{lineNumber}";
+                    error += $" Line #{lineNumber + 1}";
             }
 
             return string.IsNullOrEmpty(error);
