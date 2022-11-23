@@ -148,7 +148,7 @@ namespace _100YearPortfolio
 
             var rows = note.Split(_noteSeparators, StringSplitOptions.RemoveEmptyEntries);
 
-            var symbol = string.Empty;
+            var symbol = (string)null;
             var maxLotSize = double.NaN;
 
             foreach (var row in rows)

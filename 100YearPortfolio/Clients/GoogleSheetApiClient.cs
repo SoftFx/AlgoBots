@@ -91,7 +91,7 @@ namespace _100YearPortfolio.Clients
             {
                 var cells = row.Values;
 
-                if (cells.Count > 0 && !string.IsNullOrEmpty(cells[0].FormattedValue))
+                if (cells != null && cells.Count > 0 && !string.IsNullOrEmpty(cells[0].FormattedValue))
                     settingsStr.Add(cells[0].Note);
             }
 
