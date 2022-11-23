@@ -11,6 +11,8 @@ namespace _100YearPortfolio.Clients
         protected const string PortfolioPage = "Portfolio";
         protected const string StatusPage = "Status";
 
+        protected const string NoteRange = $"{PortfolioPage}!A1:A";
+
         private readonly PortfolioReader _reader = new();
         private readonly string _sheetLink;
 
@@ -38,19 +40,17 @@ namespace _100YearPortfolio.Clients
                 error = $"Cannot get spread sheet id or read data from {_sheetLink}!";
             else if (!TryReadPage(ConfigPage, out var configStr))
                 error = EmptySheetError(ConfigPage);
-            else if (!_reader.TryReadSettings(configStr, out config, out error))
+            else if (!_reader.TryReadConfig(configStr, out config, out error))
                 error = $"Cannot read bot settings. Sheet {ConfigPage}. {error}";
 
             return string.IsNullOrEmpty(error);
         }
 
-        internal bool TryReadPortfolio(PortfolioBot bot, out MarketState state, out string error)
+        internal bool TryFillMarket(MarketState market, out string error)
         {
-            state = null;
-
             if (!TryReadPage(PortfolioPage, out var portfolioStr))
                 error = EmptySheetError(PortfolioPage);
-            else if (!PortfolioReader.TryReadPortfolio(bot, portfolioStr, out state, out error))
+            else if (!TryReadNotes(out var notes, out error) || !PortfolioReader.TryFillMarket(portfolioStr, notes, market, out error))
                 error = $"Cannot read bot portfolio. Sheet {PortfolioPage}. {error}";
 
             return string.IsNullOrEmpty(error);
@@ -62,6 +62,8 @@ namespace _100YearPortfolio.Clients
 
 
         protected abstract bool TryReadPage(string pageName, out List<List<string>> configStr);
+
+        protected abstract bool TryReadNotes(out List<string> settingsStr, out string error);
 
         protected abstract bool IsValidLink();
 

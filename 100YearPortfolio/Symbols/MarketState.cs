@@ -10,6 +10,14 @@ namespace _100YearPortfolio
         private readonly Dictionary<string, MarketSymbol> _symbols = new(1 << 4);
         private readonly List<Task> _calculateTasks = new(1 << 4);
 
+        private readonly PortfolioBot _bot;
+
+
+        internal MarketState(PortfolioBot bot)
+        {
+            _bot = bot;
+        }
+
 
         public Task Recalculate()
         {
@@ -21,18 +29,23 @@ namespace _100YearPortfolio
             return Task.WhenAll(_calculateTasks);
         }
 
-        public bool AddSymbol(MarketSymbol symbol)
+        public bool AddSymbol(string name, string alias, double percent, NoteSettings settings)
         {
-            var ok = _symbols.TryAdd(symbol.Name, symbol);
+            if (_symbols.ContainsKey(name))
+                return false;
 
-            if (ok)
+            var symbol = new MarketSymbol(_bot, alias, percent, settings);
+
+            if (_symbols.TryAdd(symbol.OriginName, symbol))
                 _calculateTasks.Add(Task.CompletedTask);
 
-            return ok;
+            return true;
         }
 
-        public bool CheckTotalPercent()
+        public bool CheckTotalPercent(out string distribution)
         {
+            distribution = string.Join("; ", _symbols.Values.Select(u => u.Percent));
+
             return _symbols.Values.Sum(u => Math.Abs(u.Percent)).Lte(MaxPercentSum);
         }
 
@@ -43,7 +56,7 @@ namespace _100YearPortfolio
             sb.AppendLine("Symbols:");
 
             foreach (var symbol in _symbols.Values)
-                sb.AppendLine($"{symbol.Name} - {symbol.GetCurrentState()}");
+                sb.Append($"{symbol.GetCurrentState()}");
 
             return sb.ToString();
         }

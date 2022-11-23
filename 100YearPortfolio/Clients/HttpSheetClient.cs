@@ -9,6 +9,8 @@ namespace _100YearPortfolio.Clients
         private readonly HttpClient _httpClient = new();
         private readonly XLWorkbook _book;
 
+        private int _symbolCount;
+
 
         internal HttpSheetClient(string link) : base(link)
         {
@@ -31,7 +33,7 @@ namespace _100YearPortfolio.Clients
             if (!_book.TryGetWorksheet(pageName, out var sheet))
                 return false;
 
-            foreach (var row in sheet.RowsUsed())
+            foreach (var row in sheet.RowsUsed(XLCellsUsedOptions.All))
             {
                 var cells = row.Cells();
 
@@ -40,7 +42,18 @@ namespace _100YearPortfolio.Clients
                 configStr.Add(cells.Select(c => c.GetString()).ToList());
             }
 
+            _symbolCount = configStr.Count;
+
             return configStr.Count > 0;
+        }
+
+        protected override bool TryReadNotes(out List<string> settingsStr, out string error)
+        {
+            //ToDo: await while ClosedXML fixes a bug with reading comments
+            error = null;
+            settingsStr = new List<string>(Enumerable.Repeat(string.Empty, _symbolCount));
+
+            return true;
         }
 
         protected override bool IsValidLink() => _book != null;

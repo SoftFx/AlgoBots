@@ -14,23 +14,22 @@ namespace _100YearPortfolio.Portfolio
         internal const string BalanceTypeSettingName = "Balance Type";
         internal const string EquityMinLevelSettingName = "Equity Min Lvl";
         internal const string EquityUpdateTimeName = "Equity Update Time (sec)";
-        internal const string DefaultMaxLotSizeSettingName = "Default Max Lots Sum";
         internal const string StatusUpdateTimeoutName = "Status Update Timeout (sec)";
+
+        internal const int DefaultStatusUpdateTimeout = 60;
 
         private string _toString;
 
 
         public int UpdateMinutes { get; init; }
 
-        public int StatusUpdateTimeoutSec { get; init; }
+        public int StatusUpdateTimeoutSec { get; init; } = DefaultStatusUpdateTimeout;
 
         public BalanceTypeEnum BalanceType { get; init; }
 
         public double EquityMinLevel { get; init; }
 
         public int EquityUpdateTime { get; init; }
-
-        public double DefaultMaxLotSize { get; init; }
 
 
         public override string ToString()
@@ -41,11 +40,12 @@ namespace _100YearPortfolio.Portfolio
 
                 sb.AppendLine($"{nameof(PortfolioConfig)}:")
                   .AppendLine($"{UpdateMinSettingName} = {UpdateMinutes}")
-                  .AppendLine($"{StatusUpdateTimeoutName} = {StatusUpdateTimeoutSec}")
                   .AppendLine($"{BalanceTypeSettingName} = {BalanceType}")
                   .AppendLine($"{EquityMinLevelSettingName} = {EquityMinLevel}%")
                   .AppendLine($"{EquityUpdateTimeName} = {EquityUpdateTime}")
-                  .Append($"{DefaultMaxLotSizeSettingName} = {DefaultMaxLotSize}");
+                  .AppendLine()
+                  .AppendLine("Optional settings:")
+                  .AppendLine($"{StatusUpdateTimeoutName} = {StatusUpdateTimeoutSec}");
 
                 return sb.ToString();
             }

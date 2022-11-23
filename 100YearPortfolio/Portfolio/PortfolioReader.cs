@@ -8,7 +8,10 @@ namespace _100YearPortfolio
     {
         private const string SymbolNameHeader = "Symbol";
         private const string PercentNameHeader = "Distribution";
-        private const string MaxLotsNameHeader = "MaxLotsSum";
+        private const string MaxLotSizeHeader = "MaxLotSize";
+        private const string OriginSymbolHeader = "Symbol";
+
+        private readonly static char[] _noteSeparators = new char[] { '\n', ';' };
 
         private readonly List<string> _expectedSettings = new()
         {
@@ -16,12 +19,15 @@ namespace _100YearPortfolio
             BalanceTypeSettingName,
             EquityMinLevelSettingName,
             EquityUpdateTimeName,
-            DefaultMaxLotSizeSettingName,
+        };
+
+        private readonly List<string> _optionalSettings = new()
+        {
             StatusUpdateTimeoutName
         };
 
 
-        public bool TryReadSettings(List<List<string>> configStr, out PortfolioConfig config, out string error)
+        public bool TryReadConfig(List<List<string>> configStr, out PortfolioConfig config, out string error)
         {
             static string GetSettingReadError(string setting, string val) => $"Invalid format {setting} = {val}";
 
@@ -29,14 +35,14 @@ namespace _100YearPortfolio
             config = null;
 
             var updateMin = 1;
-            var updateStatusSec = 1;
             var minEquityLevel = 0.0;
             var equituUpdateTime = 0;
-            var defaultMaxLotSize = 0.0;
             var balanceType = BalanceTypeEnum.Balance;
 
+            var updateStatusSec = DefaultStatusUpdateTimeout;
+
             foreach (var item in configStr)
-                if (item.Count > 1 && _expectedSettings.Contains(item[0]))
+                if (item.Count > 1 && (_expectedSettings.Contains(item[0]) || _optionalSettings.Contains(item[0])))
                 {
                     var settingName = item[0];
                     var valueStr = item[1];
@@ -48,13 +54,15 @@ namespace _100YearPortfolio
                         BalanceTypeSettingName => Enum.TryParse(valueStr, true, out balanceType),
                         EquityMinLevelSettingName => TryReadPercent(valueStr, out minEquityLevel),
                         EquityUpdateTimeName => int.TryParse(valueStr, out equituUpdateTime),
-                        DefaultMaxLotSizeSettingName => TryParseInvariantDouble(valueStr, out defaultMaxLotSize),
                     };
 
                     if (!ok)
                         error = GetSettingReadError(settingName, valueStr);
 
-                    _expectedSettings.Remove(settingName);
+                    if (_expectedSettings.Contains(settingName))
+                        _expectedSettings.Remove(settingName);
+                    else
+                        _optionalSettings.Remove(settingName);
                 }
 
             if (_expectedSettings.Count == 0)
@@ -66,7 +74,6 @@ namespace _100YearPortfolio
                     BalanceType = balanceType,
                     EquityMinLevel = minEquityLevel,
                     EquityUpdateTime = equituUpdateTime,
-                    DefaultMaxLotSize = defaultMaxLotSize,
                 };
             }
             else
@@ -76,9 +83,9 @@ namespace _100YearPortfolio
         }
 
 
-        public static bool TryReadPortfolio(PortfolioBot bot, List<List<string>> portfolioStr, out MarketState marketState, out string error)
+        public static bool TryFillMarket(List<List<string>> portfolioStr, List<string> notes,
+                                         MarketState market, out string error)
         {
-            marketState = new MarketState();
             error = null;
 
             var lineNumber = 0;
@@ -96,9 +103,11 @@ namespace _100YearPortfolio
                     if (line.Count < 1)
                         throw new Exception($"Invalid line format.");
 
-                    var symbolName = line[0];
-                    var maxSumLot = (double?)null;
+                    var alias = line[0];
                     var percent = 0.0;
+
+                    if (string.IsNullOrEmpty(alias))
+                        continue;
 
                     if (line.Count > 1 && !string.IsNullOrEmpty(line[1]))
                     {
@@ -108,24 +117,15 @@ namespace _100YearPortfolio
                             throw new Exception($"Incorrect {PercentNameHeader} = {percentStr}.");
                     }
 
-                    if (line.Count > 2 && !string.IsNullOrEmpty(line[2]))
-                    {
-                        var maxSumLotStr = line[2];
+                    var note = ParseSymbolNote(notes[lineNumber]);
+                    var symbolName = note.SymbolOrigin ?? alias;
 
-                        if (!TryParseInvariantDouble(maxSumLotStr, out var maxSumLotDouble))
-                            throw new Exception($"Incorrect {MaxLotsNameHeader} = {maxSumLotStr}.");
-                        else
-                            maxSumLot = maxSumLotDouble;
-                    }
-
-                    var symbol = new MarketSymbol(bot, symbolName, percent, maxSumLot);
-
-                    if (!marketState.AddSymbol(symbol))
+                    if (!market.AddSymbol(symbolName, alias, percent, note))
                         throw new Exception($"Symbol {symbolName} is duplicated.");
                 }
 
-                if (!marketState.CheckTotalPercent())
-                    throw new Exception("Percentage is greater than 100%");
+                if (!market.CheckTotalPercent(out string distribution))
+                    throw new Exception($"Percentage is greater than 100%: {distribution}");
 
                 return true;
             }
@@ -138,6 +138,50 @@ namespace _100YearPortfolio
             }
 
             return string.IsNullOrEmpty(error);
+        }
+
+
+        private static NoteSettings ParseSymbolNote(string note)
+        {
+            if (string.IsNullOrEmpty(note))
+                return new NoteSettings();
+
+            var rows = note.Split(_noteSeparators, StringSplitOptions.RemoveEmptyEntries);
+
+            var symbol = string.Empty;
+            var maxLotSize = double.NaN;
+
+            foreach (var row in rows)
+            {
+                var parts = row.Split('=', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+
+                if (parts.Count != 2)
+                    throw new Exception($"Invalid note format: {row}");
+
+                var okParseValue = parts[0] switch
+                {
+                    MaxLotSizeHeader => TryParseInvariantDouble(parts[1], out maxLotSize),
+                    OriginSymbolHeader => CheckString(parts[1], out symbol),
+                    _ => false
+                };
+
+                if (!okParseValue)
+                    throw new Exception($"Invalid value for property {parts[0]} = {parts[1]}");
+            }
+
+            return new NoteSettings()
+            {
+                SymbolOrigin = symbol,
+                MaxLotSize = maxLotSize,
+            };
+        }
+
+
+        private static bool CheckString(string str, out string result)
+        {
+            result = str;
+
+            return !string.IsNullOrEmpty(result);
         }
 
         private static bool TryReadPercent(string str, out double percent)

@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClosedXML" Version="0.96.0" />
-    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.57.0.2727" />
+    <PackageReference Include="ClosedXML" Version="0.97.0" />
+    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.57.0.2826" />
     <PackageReference Include="TickTrader.Algo.Api" Version="1.5.1-beta.2" />
     <PackageReference Include="TickTrader.Algo.Tools" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>

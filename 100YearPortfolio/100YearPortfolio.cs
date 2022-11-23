@@ -1,6 +1,5 @@
 ﻿using _100YearPortfolio.Clients;
 using _100YearPortfolio.Portfolio;
-using SoftFx;
 using System.Text;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
@@ -14,6 +13,16 @@ namespace _100YearPortfolio
         private const int ErrorTimeout = 30000;
 
         public const string FullBotName = "100YearPortfolioBot";
+
+        private BaseSheetClient _client;
+        private PortfolioConfig _config;
+        private MarketState _market;
+
+        private RecalculationEvent _marketState;
+        private RecalculationEvent _equityState;
+
+        private double _lastCalculatedEquity;
+        private string _balancePrecision;
 
 
         [Parameter]
@@ -29,30 +38,21 @@ namespace _100YearPortfolio
 
         internal PortfolioConfig Config => _config;
 
-        public double CalculationBalance => Config.BalanceType.IsBalance() ? Account.Balance : Account.Equity;
+        internal double CalculationBalance => Config.BalanceType.IsBalance() ? Account.Balance : Account.Equity;
 
-        public double EquityChange => MarketSymbol.PercentCoef * (1.0 - Account.Equity / _lastCalculatedEquity);
-
-
-        private BaseSheetClient _client;
-        private PortfolioConfig _config;
-        private MarketState _market;
-
-        private RecalculationEvent _marketState;
-        private RecalculationEvent _equityState;
-
-        private double _lastCalculatedEquity;
-        private string _balancePrecision;
+        internal double EquityChange => 100.0 * (1.0 - Account.Equity / _lastCalculatedEquity);
 
 
         protected override void Init()
         {
             _lastCalculatedEquity = Account.Equity;
 
+            _market = new MarketState(this);
             _client = ClientFactory.GetClient(SheetLink, CredsFile.FullPath);
 
-            if (!TryValidateGlobalState(out var error) || !_client.TryReadConfig(out _config, out error)
-                || !_client.TryReadPortfolio(this, out _market, out error))
+            if (!TryValidateAccountSettings(out var error) ||
+                !_client.TryReadConfig(out _config, out error) ||
+                !_client.TryFillMarket(_market, out error))
                 StopBotWithError(error);
             else
             {
@@ -72,14 +72,14 @@ namespace _100YearPortfolio
 
                 Account.BalanceUpdated += Account_BalanceUpdated;
 
-                ThreadPool.QueueUserWorkItem(UpdateLoop);
+                _ = UpdateLoop();
             }
         }
 
         protected override void OnStop() => _client?.Dispose();
 
 
-        private async void UpdateLoop(object _)
+        private async Task UpdateLoop()
         {
             if (await FlushSheetStatus())
                 while (!IsStopped)
@@ -147,7 +147,7 @@ namespace _100YearPortfolio
             return Task.CompletedTask;
         }
 
-        private bool TryValidateGlobalState(out string error)
+        private bool TryValidateAccountSettings(out string error)
         {
             error = null;
 

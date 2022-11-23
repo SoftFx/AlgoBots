@@ -1,5 +1,4 @@
 ﻿using Google.Apis.Auth.OAuth2;
-using Google.Apis.Requests;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
@@ -47,8 +46,9 @@ namespace _100YearPortfolio.Clients
         protected override bool TryReadPage(string pageName, out List<List<string>> configStr)
         {
             var request = _service.Spreadsheets.Values.Get(_spreadSheetId, pageName);
-            var values = request.Execute().Values;
+            request.ValueRenderOption = GetRequest.ValueRenderOptionEnum.UNFORMATTEDVALUE;
 
+            var values = request.Execute().Values;
             var result = values != null && values.Count > 0;
 
             configStr = result ? new List<List<string>>(values.Count) : null;
@@ -57,10 +57,45 @@ namespace _100YearPortfolio.Clients
             {
                 foreach (var value in values)
                     if (value.Count > 0)
-                        configStr.Add(new List<string>(value.OfType<string>()));
+                        configStr.Add(new List<string>(value.Select(v => v.ToString())));
             }
 
             return result && configStr.Count > 0;
+        }
+
+        protected override bool TryReadNotes(out List<string> settingsStr, out string error)
+        {
+            var spreadSheetInfoRequest = _service.Spreadsheets.Get(_spreadSheetId);
+
+            spreadSheetInfoRequest.IncludeGridData = true;
+            spreadSheetInfoRequest.Ranges = NoteRange;
+
+            var spreadSheetInfo = spreadSheetInfoRequest.Execute();
+
+            settingsStr = new List<string>();
+            error = string.Empty;
+
+            if (spreadSheetInfo.Sheets.Count == 0)
+            {
+                error = $"{PortfolioPage} not found.";
+
+                return false;
+            }
+
+            var sheet = spreadSheetInfo.Sheets[0];
+
+            if (sheet.Data.Count == 0)
+                return true;
+
+            foreach (var row in sheet.Data[0].RowData)
+            {
+                var cells = row.Values;
+
+                if (cells.Count > 0 && !string.IsNullOrEmpty(cells[0].FormattedValue))
+                    settingsStr.Add(cells[0].Note);
+            }
+
+            return true;
         }
 
 
