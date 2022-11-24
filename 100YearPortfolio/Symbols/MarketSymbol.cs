@@ -111,7 +111,7 @@ namespace _100YearPortfolio
 
         private async Task OpenOrderChain(double money, double price)
         {
-            var expectedVolume = Math.Min(CalculateOpenVolume(Math.Abs(money), price), MaxLotSize);
+            var expectedVolume = Math.Min(CalculateOpenVolume(Math.Abs(money), price), MaxLotSize).Round(Symbol.TradeVolumeStep);
             var expectedSide = money.Gte(0.0) ? OrderSide.Buy : OrderSide.Sell;
 
             _bot.PrintDebug($"{OriginName} expected volume = {expectedVolume:F8}, min volume = {Symbol.MinTradeVolume}");
