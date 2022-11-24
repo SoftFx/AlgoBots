@@ -172,7 +172,7 @@ namespace _100YearPortfolio
             return new NoteSettings()
             {
                 SymbolOrigin = symbol,
-                MaxLotSize = maxLotSize,
+                MaxLotSize = double.IsNaN(maxLotSize) ? null : maxLotSize,
             };
         }
 
