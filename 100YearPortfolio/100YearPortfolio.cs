@@ -25,9 +25,6 @@ namespace _100YearPortfolio
         private string _balancePrecision;
 
 
-        [Parameter]
-        public bool UseDebug { get; set; }
-
         [Parameter(IsRequired = true)]
         public string SheetLink { get; set; }
 
@@ -45,6 +42,11 @@ namespace _100YearPortfolio
 
         protected override void Init()
         {
+            string GetBalanceFormat()
+            {
+                return $"F{Currencies[Account.BalanceCurrency].Digits}";
+            }
+
             _lastCalculatedEquity = Account.Equity;
 
             _market = new MarketState(this);
@@ -70,7 +72,8 @@ namespace _100YearPortfolio
                     RecalculateAction = RememberEquity,
                 };
 
-                Account.BalanceUpdated += Account_BalanceUpdated;
+                Account.BalanceUpdated += AccountBalanceUpdated;
+                Account.Orders.Opened += OrdersOpened;
 
                 _ = UpdateLoop();
             }
@@ -113,6 +116,10 @@ namespace _100YearPortfolio
                 }
         }
 
+        private void AccountBalanceUpdated() => _marketState.Recalculate(UtcNow);
+
+        private void OrdersOpened(OrderOpenedEventArgs obj) => Status.WriteLine(BuildCurrentStatus());
+
         private string BuildCurrentStatus()
         {
             var sb = new StringBuilder(1 << 10);
@@ -132,13 +139,6 @@ namespace _100YearPortfolio
             return sb.ToString();
         }
 
-        private void Account_BalanceUpdated() => _marketState.Recalculate(UtcNow);
-
-        internal void PrintDebug(string msg)
-        {
-            if (UseDebug)
-                Print(msg);
-        }
 
         private Task RememberEquity()
         {
@@ -155,13 +155,6 @@ namespace _100YearPortfolio
                 error = $"Only Net account is available";
 
             return string.IsNullOrEmpty(error);
-        }
-
-        private string GetBalanceFormat()
-        {
-            var smb = Currencies[Account.BalanceCurrency];
-
-            return $"F{smb.Digits}";
         }
 
         private async Task CriticalLossMoney()
@@ -204,7 +197,7 @@ namespace _100YearPortfolio
 
         private void StopBotWithError(string error)
         {
-            Account.BalanceUpdated -= Account_BalanceUpdated;
+            Account.BalanceUpdated -= AccountBalanceUpdated;
 
             PrintError(error);
             Status.WriteLine(error);

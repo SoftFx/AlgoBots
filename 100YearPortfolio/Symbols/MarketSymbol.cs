@@ -73,7 +73,7 @@ namespace _100YearPortfolio
             if (!string.IsNullOrEmpty(_error))
                 return _error;
 
-            var used = GetUsedMoney(out var bid, out var ask);
+            var used = CalculateUsedMoney(out var bid, out var ask);
 
             if (Percent.E(0.0) && used.E(0.0))
                 return string.Empty;
@@ -87,10 +87,8 @@ namespace _100YearPortfolio
                .Append($"{Alias}{(Alias != OriginName ? $"({OriginName})" : "")} - ")
                .Append($"{nameof(MaxLotSize)} = {MaxLotSize}, ")
                .Append($"expected = {Percent:F2}%, ")
-               .Append($"delta = {deltaPercent:F2}% ({openVolume:0.#####} lots)");
-
-            if (_bot.UseDebug)
-                _sb.Append($", rate {bid}/{ask}");
+               .Append($"delta = {deltaPercent:F2}% ({openVolume:0.#####} lots)")
+               .Append($", rate {bid}/{ask}");
 
             return _sb.AppendLine().ToString();
         }
@@ -102,9 +100,9 @@ namespace _100YearPortfolio
 
             await CancelOrderChain();
 
-            var expectedMoney = ActualMoney - GetUsedMoney(out var bid, out var ask);
+            var expectedMoney = ActualMoney - CalculateUsedMoney(out var bid, out var ask);
 
-            _bot.PrintDebug($"{OriginName} money delta = {expectedMoney:F6}");
+            _bot.Print($"{OriginName} money delta = {expectedMoney:F6}");
 
             await OpenOrderChain(expectedMoney, expectedMoney > 0 ? bid : ask);
         }
@@ -114,8 +112,8 @@ namespace _100YearPortfolio
             var expectedVolume = Math.Min(CalculateOpenVolume(Math.Abs(money), price), MaxLotSize).Round(Symbol.TradeVolumeStep);
             var expectedSide = money.Gte(0.0) ? OrderSide.Buy : OrderSide.Sell;
 
-            _bot.PrintDebug($"{OriginName} expected volume = {expectedVolume:F8}, min volume = {Symbol.MinTradeVolume}");
-            _bot.PrintDebug($"{OriginName} try open = {expectedVolume.Gte(Symbol.MinTradeVolume)}");
+            _bot.Print($"{OriginName} expected volume = {expectedVolume:F8}, min volume = {Symbol.MinTradeVolume}");
+            _bot.Print($"{OriginName} try open = {expectedVolume.Gte(Symbol.MinTradeVolume)}");
 
             if (expectedVolume.Gte(Symbol.MinTradeVolume))
             {
@@ -166,7 +164,7 @@ namespace _100YearPortfolio
             return money / (price * Symbol.ContractSize);
         }
 
-        private double GetUsedMoney(out double bid, out double ask)
+        private double CalculateUsedMoney(out double bid, out double ask)
         {
             bid = Symbol.Bid;
             ask = Symbol.Ask;
