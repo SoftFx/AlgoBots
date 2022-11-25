@@ -72,6 +72,7 @@ namespace _100YearPortfolio
                     RecalculateAction = RememberEquity,
                 };
 
+                Account.NetPositions.Modified += NetPositionsModified;
                 Account.BalanceUpdated += AccountBalanceUpdated;
                 Account.Orders.Opened += OrdersOpened;
 
@@ -116,9 +117,12 @@ namespace _100YearPortfolio
                 }
         }
 
+
         private void AccountBalanceUpdated() => _marketState.Recalculate(UtcNow);
 
-        private void OrdersOpened(OrderOpenedEventArgs obj) => Status.WriteLine(BuildCurrentStatus());
+        private void OrdersOpened(OrderOpenedEventArgs _) => Status.WriteLine(BuildCurrentStatus());
+
+        private void NetPositionsModified(NetPositionModifiedEventArgs _) => Status.WriteLine(BuildCurrentStatus());
 
         private string BuildCurrentStatus()
         {
@@ -197,7 +201,9 @@ namespace _100YearPortfolio
 
         private void StopBotWithError(string error)
         {
+            Account.NetPositions.Modified -= NetPositionsModified;
             Account.BalanceUpdated -= AccountBalanceUpdated;
+            Account.Orders.Opened -= OrdersOpened;
 
             PrintError(error);
             Status.WriteLine(error);
