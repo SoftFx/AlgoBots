@@ -186,7 +186,19 @@ namespace _100YearPortfolio
 
         private static bool TryReadPercent(string str, out double percent)
         {
-            return TryParseInvariantDouble(str.TrimEnd('%'), out percent);
+            str = str.Trim();
+            percent = 0.0;
+
+            if (string.IsNullOrEmpty(str))
+                return false;
+
+            var isPercentString = str[^1] == '%';
+            var result = TryParseInvariantDouble(str.TrimEnd('%'), out percent);
+
+            if (isPercentString)
+                percent /= 100.0;
+
+            return result;
         }
 
         private static bool TryParseInvariantDouble(string str, out double val)

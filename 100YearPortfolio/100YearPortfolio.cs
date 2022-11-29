@@ -37,7 +37,7 @@ namespace _100YearPortfolio
 
         internal double CalculationBalance => Config.BalanceType.IsBalance() ? Account.Balance : Account.Equity;
 
-        internal double EquityChange => 100.0 * (1.0 - Account.Equity / _lastCalculatedEquity);
+        internal double EquityChange => 1.0 - Account.Equity / _lastCalculatedEquity;
 
 
         protected override void Init()

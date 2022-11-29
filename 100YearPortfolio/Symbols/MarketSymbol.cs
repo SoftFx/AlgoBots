@@ -42,7 +42,7 @@ namespace _100YearPortfolio
         private NetPosition Position => Account.NetPositions[OriginName];
 
 
-        private double ActualMoney => _bot.CalculationBalance * Percent / PercentCoef;
+        private double ActualMoney => _bot.CalculationBalance * Percent;
 
 
         public MarketSymbol(PortfolioBot bot, string aliasName, double percent, NoteSettings settings)
@@ -79,15 +79,15 @@ namespace _100YearPortfolio
                 return string.Empty;
 
             var deltaMoney = ActualMoney - used;
-            var deltaPercent = Percent - used / _bot.CalculationBalance * PercentCoef;
+            var deltaPercent = Percent - used / _bot.CalculationBalance;
 
             var openVolume = CalculateOpenVolume(deltaMoney, deltaMoney > 0 ? bid : ask);
 
             _sb.Clear()
                .Append($"{Alias}{(Alias != OriginName ? $"({OriginName})" : "")} - ")
                .Append($"{nameof(MaxLotSize)} = {MaxLotSize}, ")
-               .Append($"expected = {Percent:F2}%, ")
-               .Append($"delta = {deltaPercent:F2}% ({openVolume:0.#####} lots)")
+               .Append($"expected = {Percent * PercentCoef:F2}%, ")
+               .Append($"delta = {deltaPercent * PercentCoef:F2}% ({openVolume:0.#####} lots)")
                .Append($", rate {bid}/{ask}");
 
             return _sb.AppendLine().ToString();

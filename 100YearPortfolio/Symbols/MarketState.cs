@@ -47,9 +47,11 @@ namespace _100YearPortfolio
 
         public bool CheckTotalPercent(out string distribution)
         {
-            distribution = string.Join("; ", _symbols.Values.Select(u => u.Percent));
+            var percents = _symbols.Values.Select(u => u.Percent * 100.0);
 
-            return _symbols.Values.Sum(u => Math.Abs(u.Percent)).Lte(MaxPercentSum);
+            distribution = string.Join("; ", percents);
+
+            return percents.Sum(u => Math.Abs(u)).Lte(MaxPercentSum);
         }
 
 
