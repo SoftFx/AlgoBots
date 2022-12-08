@@ -7,7 +7,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace MovingAverageBot
 {
-    [TradeBot(DisplayName = "MovingAverageBot", Category = "SoftFX Public", Version = "1.2")]
+    [TradeBot(DisplayName = "MovingAverageBot", Category = "SoftFX Public", Version = "1.3")]
     public class MovingAverageBot : TradeBot
     {
         [Parameter(DisplayName = "MaximumRisk", DefaultValue = 0.02)]
@@ -112,22 +112,25 @@ namespace MovingAverageBot
         private void CheckForOpen()
         {
             double ma = _iMA.Average[0];
-            double openVolume = LotsOptimized();
 
-            Print($"OpenVolume: {openVolume}, MinTradeVolume: {Symbol.MinTradeVolume}");
+            OrderSide? side = null;
 
             if (Bars.Open[1] > ma && Bars.Close[1] < ma)
             {
-                if (!double.IsNaN(openVolume) && OpenMarketOrder(OrderSide.Sell, openVolume).ResultCode == OrderCmdResultCodes.Ok)
-                    Print($"Open volume = {openVolume}, price = {Bid}");
-                return;
+                side = OrderSide.Sell;
+            }
+            else if (Bars.Open[1] < ma && Bars.Close[1] > ma)
+            {
+                side = OrderSide.Buy;
             }
 
-            if (Bars.Open[1] < ma && Bars.Close[1] > ma)
+            if (side != null)
             {
-                if (!double.IsNaN(openVolume) && OpenMarketOrder(OrderSide.Buy, openVolume).ResultCode == OrderCmdResultCodes.Ok)
-                    Print($"Open volume = {openVolume}, price = {Ask}");
-                return;
+                double openVolume = LotsOptimized();
+                Print($"OpenVolume: {openVolume}, MinTradeVolume: {Symbol.MinTradeVolume}");
+
+                if (!double.IsNaN(openVolume) && OpenMarketOrder(side.Value, openVolume).ResultCode == OrderCmdResultCodes.Ok)
+                    Print($"Open volume = {openVolume}, price = {(side.Value == OrderSide.Sell ? Bid : Ask)}");
             }
         }
 
