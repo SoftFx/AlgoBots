@@ -6,7 +6,7 @@ Based on the stock distribution in the *Portfolio* sheet, this bot open and chan
 
 ## Description
 The bot opens/closes Limit orders so that total amount of money invested by Symbol (orders + positions) is equal to the percentage of the account balance in *Portfolio* every N minutes.
-Is the equity loss is critical the bot will be stopped.
+If the equity loss is critical the bot will be stopped.
 
 ## Required Links
 **For bot running you have to create Google Sheet with Configuration.**
@@ -59,7 +59,7 @@ A time after which a bot refreshes *Status*. Integer parameter. Should be greate
 
 ## Portfolio page
 
-Current page consists stock distribution and has 3 columns: Name and Distribution. Also Name column can have Notes with additional settings.
+Current page consists stock distribution and has 2 columns: Name and Distribution. Also Name column can have Notes with additional settings.
 
 
 ### Main settings
@@ -70,7 +70,7 @@ Current page consists stock distribution and has 3 columns: Name and Distributio
 A name of the symbol, which will be used to open orders. String value.
 
 #### **Distribution**
-A percentage of money from the account balance for opening orders. Double percent parameter (must end with %). If value is positive value than positions side is Buy else Sell. **Total sum absolute values of column should be less than 100%**
+A percentage of money from the account balance for opening orders. Double percent parameter (must end with %). If value is positive than positions side is Buy else Sell. **Total sum absolute values of column should be less or equal 100%**
 
 ### Additional settings (optional, **available only with cred file**)
 
@@ -79,10 +79,10 @@ A percentage of money from the account balance for opening orders. Double percen
 Additional parameters should be written as Note for the first cell.
 
 #### **Symbol**
-This is the symbol name on a server side. Used to open orders. If not specified the value **Name** is used by default. String value.
+This is the symbol name on a server side. Used to open orders. If the symbol isn't specified, the value **Name** is used by default. String value.
 
 #### **MaxLotSize**
-Upper limit for a order volume. Positive double value. Default value is  **Symbol.MaxTradeVolume**
+Upper limit for an order volume. Positive double value. Default value is  **Symbol.MaxTradeVolume**
 
 ## Filling rules
 - The order of records isn't important
