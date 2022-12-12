@@ -6,7 +6,7 @@ namespace _100YearPortfolio
 {
     internal sealed class PortfolioReader
     {
-        private const string SymbolNameHeader = "Symbol";
+        private const string SymbolNameHeader = "Name";
         private const string PercentNameHeader = "Distribution";
         private const string MaxLotSizeHeader = "MaxLotSize";
         private const string OriginSymbolHeader = "Symbol";

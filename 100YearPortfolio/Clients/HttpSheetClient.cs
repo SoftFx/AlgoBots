@@ -21,7 +21,14 @@ namespace _100YearPortfolio.Clients
             {
                 using var reader = response.Content.ReadAsStream();
 
-                _book = new XLWorkbook(reader);
+                try
+                {
+                    _book = new XLWorkbook(reader);
+                }
+                catch
+                {
+                    throw new Exception("Can't parse file data. Please check the link permissions.");
+                }
             }
         }
 

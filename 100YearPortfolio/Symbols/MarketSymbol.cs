@@ -44,6 +44,8 @@ namespace _100YearPortfolio
 
         private double ActualMoney => _bot.CalculationBalance * Percent;
 
+        private double MinLotSize => Symbol.MinTradeVolume;
+
 
         public MarketSymbol(PortfolioBot bot, string aliasName, double percent, NoteSettings settings)
         {
@@ -57,8 +59,8 @@ namespace _100YearPortfolio
 
             if (!Symbol.IsNull)
             {
-                if (MaxLotSize.Lt(Symbol.MinTradeVolume))
-                    _error = $"{nameof(MaxLotSize)} less than MinTradeVolume = {Symbol.MinTradeVolume}!";
+                if (MaxLotSize.Lt(MinLotSize))
+                    _error = $"{nameof(MaxLotSize)} less than MinTradeVolume = {MinLotSize}!";
                 else
                     Symbol.Subscribe();
             }
@@ -81,7 +83,7 @@ namespace _100YearPortfolio
             var deltaMoney = ActualMoney - used;
             var deltaPercent = Percent - used / _bot.CalculationBalance;
 
-            var openVolume = CalculateOpenVolume(deltaMoney, deltaMoney > 0 ? bid : ask);
+            var openVolume = CalculateVolume(deltaMoney, deltaMoney > 0 ? bid : ask);
 
             _sb.Clear()
                .Append($"{Alias}{(Alias != OriginName ? $"({OriginName})" : "")} - ")
@@ -107,59 +109,35 @@ namespace _100YearPortfolio
             await OpenOrderChain(expectedMoney, expectedMoney > 0 ? bid : ask);
         }
 
-        private async Task OpenOrderChain(double money, double price)
+        private Task OpenOrderChain(double money, double price)
         {
-            var expectedVolume = Math.Min(CalculateOpenVolume(Math.Abs(money), price), MaxLotSize).Round(Symbol.TradeVolumeStep);
+            var expectedVolume = Math.Min(CalculateVolume(Math.Abs(money), price), MaxLotSize).Round(Symbol.TradeVolumeStep);
             var expectedSide = money.Gte(0.0) ? OrderSide.Buy : OrderSide.Sell;
 
-            _bot.Print($"{OriginName} expected volume = {expectedVolume:F8}, min volume = {Symbol.MinTradeVolume}");
-            _bot.Print($"{OriginName} try open = {expectedVolume.Gte(Symbol.MinTradeVolume)}");
+            _bot.Print($"{OriginName} expected volume = {expectedVolume:F8}, min volume = {MinLotSize}");
+            _bot.Print($"{OriginName} try open = {expectedVolume.Gte(MinLotSize)}");
 
-            if (expectedVolume.Gte(Symbol.MinTradeVolume))
-            {
-                expectedVolume = Math.Min(expectedVolume, Symbol.MaxTradeVolume);
-
-                var attempt = 0;
-
-                while (++attempt < MaxRejectAttempts)
-                {
-                    var res = await _bot.OpenOrderAsync(BuildRequest(expectedVolume, price, expectedSide));
-
-                    if (res.IsCompleted)
-                        break;
-                    else
-                        await _bot.Delay(DelayBetweenFailedRequests);
-                }
-            }
+            return expectedVolume.Gte(MinLotSize) ?
+                   ExecuteRequest(() => _bot.OpenOrderAsync(BuildRequest(expectedVolume, price, expectedSide))) :
+                   Task.CompletedTask;
         }
 
         private Task CancelOrderChain()
         {
-            async Task Cancel(Order order)
-            {
-                var attempt = 0;
-
-                while (++attempt < MaxRejectAttempts)
-                {
-                    var res = await _bot.CancelOrderAsync(order.Id);
-
-                    if (res.IsCompleted)
-                        return;
-                    else
-                        await _bot.Delay(DelayBetweenFailedRequests);
-                }
-            }
-
             var orders = Account.OrdersBySymbol(OriginName);
             var cancelTasks = new List<Task>(orders.Count);
 
             foreach (var order in orders)
-                cancelTasks.Add(Cancel(order));
+            {
+                var orderId = order.Id;
+
+                cancelTasks.Add(ExecuteRequest(() => _bot.CancelOrderAsync(orderId)));
+            }
 
             return Task.WhenAll(cancelTasks);
         }
 
-        private double CalculateOpenVolume(double money, double price)
+        private double CalculateVolume(double money, double price)
         {
             return money / (price * Symbol.ContractSize);
         }
@@ -179,11 +157,26 @@ namespace _100YearPortfolio
             return money * Symbol.ContractSize;
         }
 
+        private async Task ExecuteRequest(Func<Task<OrderCmdResult>> request)
+        {
+            var attempt = 0;
+
+            while (++attempt < MaxRejectAttempts)
+            {
+                var res = await request();
+
+                if (res.IsCompleted)
+                    return;
+                else
+                    await _bot.Delay(DelayBetweenFailedRequests);
+            }
+        }
+
         private OpenOrderRequest BuildRequest(double volume, double price, OrderSide side)
         {
             return OpenOrderRequest.Template.Create()
                                    .WithParams(OriginName, side, BaseType, volume, price, null)
-                                   .WithExpiration(_bot.UtcNow.AddHours(_bot.Config.UpdateMinutes + 1))
+                                   .WithExpiration(_bot.UtcNow.AddMinutes(_bot.Config.UpdateMinutes + 1))
                                    .MakeRequest();
         }
     }
