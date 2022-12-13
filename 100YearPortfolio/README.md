@@ -1,4 +1,4 @@
-﻿100YearPortfolioBot
+100YearPortfolioBot
 ===
 
 ## Idea
@@ -13,7 +13,7 @@ If the equity loss is critical the bot will be stopped.
 
 Template for Google Sheet Configuration is here (ссылка)
 
-Guide how to create Google Sheet and setup it is here (ссылка)
+[Guide](https://github.com/SoftFx/AlgoBots/wiki/How-to-copy-Google-sheet-config-for-a-bot%3F) how to create Google Sheet and setup it.
 
 If you want to use all features you need to create test google account. Guide you can find here (ссылка).
 
