@@ -41,7 +41,7 @@ namespace _100YearPortfolio.Portfolio
                 sb.AppendLine($"{nameof(PortfolioConfig)}:")
                   .AppendLine($"{UpdateMinSettingName} = {UpdateMinutes}")
                   .AppendLine($"{BalanceTypeSettingName} = {BalanceType}")
-                  .AppendLine($"{EquityMinLevelSettingName} = {EquityMinLevel * 100.0}%")
+                  .AppendLine($"{EquityMinLevelSettingName} = {EquityMinLevel * 100.0:F4}%")
                   .AppendLine($"{EquityUpdateTimeName} = {EquityUpdateTime}")
                   .AppendLine()
                   .AppendLine("Optional settings:")
