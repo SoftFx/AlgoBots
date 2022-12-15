@@ -9,13 +9,13 @@ The bot opens/closes Limit orders so that total amount of money invested by Symb
 If the equity loss is critical the bot will be stopped.
 
 ## Required Links
-**For bot running you have to create Google Sheet with Configuration.**
+**To run the bot, create a Google Sheet with the bot’s configuration.**
 
-Template for Google Sheet Configuration is here (ссылка)
+Find the template for the Configuration sheet [here](https://docs.google.com/spreadsheets/d/1ZsGQNKJPx-6uD1zk2xgob47NaAbp7BRLplIflFuM2XU/edit?usp=sharing)
 
-[Guide](https://github.com/SoftFx/AlgoBots/wiki/How-to-copy-Google-sheet-config-for-a-bot%3F) how to create Google Sheet and setup it.
+Find the Guide on how to create and set up the Google Sheet [here](https://github.com/SoftFx/AlgoBots/wiki/How-to-copy-Google-sheet-config-for-a-bot%3F)
 
-If you want to use all features you need to create test google account. Guide you can find here (ссылка).
+If you want to use all features, create a test Google account. Find the Guide [here](https://github.com/SoftFx/AlgoBots/wiki/How-to-connect-with-Google-Service-credentials%3F)
 
 ## Connect to Configuration sheet
 First of all you need to create a connection to Configuration before running a bot.

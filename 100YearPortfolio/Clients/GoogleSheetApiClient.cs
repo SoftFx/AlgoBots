@@ -76,11 +76,7 @@ namespace _100YearPortfolio.Clients
             error = string.Empty;
 
             if (spreadSheetInfo.Sheets.Count == 0)
-            {
-                error = $"{PortfolioPage} not found.";
-
-                return false;
-            }
+                return PortfolioPageNotFound(out error);
 
             var sheet = spreadSheetInfo.Sheets[0];
 

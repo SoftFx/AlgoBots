@@ -70,6 +70,14 @@ namespace _100YearPortfolio.Clients
         public abstract void Dispose();
 
 
+
+        protected static bool PortfolioPageNotFound(out string error)
+        {
+            error = $"{PortfolioPage} not found.";
+
+            return false;
+        }
+
         private static string EmptySheetError(string sheet) => $"{sheet} sheet is empty!";
     }
 }
