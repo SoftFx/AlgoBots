@@ -30,7 +30,7 @@ Setup window looks like this:
 This is the link to the Configuration sheet. String parameter.
 
 #### **CredsFile (optional)**
-The path to credentials file on your computer. This parameter is necessary for updating the *Status* page in the Configuration sheet in real time mode.  (for more information read [here](https://github.com/SoftFx/AlgoBots/wiki/How-to-connect-with-Google-Service-credentials%3F)). String parameter.
+The path to credentials file on your computer. This parameter is necessary for updating the *Status* page in the Configuration sheet in real time mode (for more information read [here](https://github.com/SoftFx/AlgoBots/wiki/How-to-connect-with-Google-Service-credentials%3F)). String parameter.
 
 
 ## Settings page
