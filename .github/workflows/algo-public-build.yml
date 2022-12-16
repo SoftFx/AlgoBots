@@ -5,16 +5,13 @@ on:
     branches: [master, develop]
 env:
   ARTIFACT_NAME: 'Algo PublicBots'
-  BUILD_OUTPUT_FOLDER: .build/build.output
+  BUILD_OUTPUT_FOLDER: .github/build/build.output
 
 jobs:
   build:
     runs-on: windows-latest
     env:
       BuildScriptPath: .github/build/build.ps1
-    strategy:
-      matrix:
-          node-version: [8.x, 10.x, 12.x, 13.x]
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET Core
@@ -25,15 +22,54 @@ jobs:
     - name: Run PowerShell script
       run: ${{env.BuildScriptPath}}
 
-    # - name: Upload artifact
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: ${{ env.ARTIFACT_NAME }}
-    #     path: ${{ env.BUILD_OUTPUT_FOLDER }}
-    - name: Create a file
-      run: echo ${{ matrix.node-version }} > my_file.txt
-    - name: Accidentally upload to the same artifact via multiple jobs
+    - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: my-artifact ${{ matrix.node-version }}
-        path: ${{ github.workspace }}
+        name: ${{ env.ARTIFACT_NAME }}
+        path: ${{ env.BUILD_OUTPUT_FOLDER }}
+
+  create-tag:
+    if: ${{ inputs.releaseVersion != '' }}
+    runs-on: ubuntu-latest
+    needs: build
+    outputs:
+      BUILD_TAG: ${{ steps.save-tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - id: save-tag
+        name: Create tag
+        run: echo "tag=AlgoBots-v${{ inputs.releaseVersion }}" >> $GITHUB_OUTPUT
+
+      - name: Push tag
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: ${{ steps.save-tag.outputs.tag }}
+          message: "Release ${{ steps.save-tag.outputs.tag }}"
+          force_push_tag: true
+
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [build, create-tag]
+    env:
+      ReleaseNote: "ReleaseNote.md"
+      GithubToken: ${{ secrets.BUILDRELEASESECRET }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.BUILD_OUTPUT_FOLDER }}
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          name: ${{ needs.create-tag.outputs.BUILD_TAG }}
+          tag: ${{ needs.create-tag.outputs.BUILD_TAG }}
+          token: ${{ env.GithubToken }}
+          artifacts: ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo
+          bodyFile: ${{ env.ReleaseNote }}
+          allowUpdates: true

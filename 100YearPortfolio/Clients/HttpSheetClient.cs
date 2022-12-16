@@ -1,4 +1,5 @@
-﻿using ClosedXML.Excel;
+﻿using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 
 namespace _100YearPortfolio.Clients
 {
@@ -7,7 +8,7 @@ namespace _100YearPortfolio.Clients
         private const string ExportExcelUrl = @"https://docs.google.com/spreadsheets/export?id=";
 
         private readonly HttpClient _httpClient = new();
-        private readonly XLWorkbook _book;
+        private readonly XSSFWorkbook _book;
 
 
         internal HttpSheetClient(string link) : base(link)
@@ -17,9 +18,14 @@ namespace _100YearPortfolio.Clients
 
             if (response.IsSuccessStatusCode)
             {
-                using var reader = response.Content.ReadAsStream();
-
-                _book = new XLWorkbook(reader);
+                try
+                {
+                    _book = new XSSFWorkbook(response.Content.ReadAsStream());
+                }
+                catch
+                {
+                    throw new Exception("Can't parse file data. Please check the link permissions.");
+                }
             }
         }
 
@@ -28,20 +34,43 @@ namespace _100YearPortfolio.Clients
         {
             configStr = new List<List<string>>();
 
-            if (!_book.TryGetWorksheet(pageName, out var sheet))
+            var sheet = _book.GetSheet(pageName);
+
+            if (sheet == null)
                 return false;
 
-            foreach (var row in sheet.RowsUsed())
+            for (int i = sheet.FirstRowNum; i <= sheet.LastRowNum; i++)
             {
-                var cells = row.Cells();
+                var usedCells = GetUsedCells(sheet.GetRow(i));
 
-                cells.DataType = XLDataType.Text;
-
-                configStr.Add(cells.Select(c => c.GetString()).ToList());
+                if (usedCells.Count > 0)
+                    configStr.Add(usedCells.Select(c => $"{c}").ToList());
             }
 
             return configStr.Count > 0;
         }
+
+        protected override bool TryReadNotes(out List<string> settingsStr, out string error)
+        {
+            error = null;
+            settingsStr = new List<string>();
+
+            var sheet = _book.GetSheet(PortfolioPage);
+
+            if (sheet == null)
+                return PortfolioPageNotFound(out error);
+
+            for (int i = sheet.FirstRowNum; i <= sheet.LastRowNum; i++)
+            {
+                var usedCells = GetUsedCells(sheet.GetRow(i));
+
+                if (usedCells.Count > 0)
+                    settingsStr.Add(usedCells[0].CellComment?.String.String);
+            }
+
+            return true;
+        }
+
 
         protected override bool IsValidLink() => _book != null;
 
@@ -49,6 +78,12 @@ namespace _100YearPortfolio.Clients
         {
             _book?.Dispose();
             _httpClient?.Dispose();
+        }
+
+
+        private static List<ICell> GetUsedCells(IRow row)
+        {
+            return (row?.Cells.Where(c => c.CellType != CellType.Blank) ?? Enumerable.Empty<ICell>()).ToList();
         }
     }
 }

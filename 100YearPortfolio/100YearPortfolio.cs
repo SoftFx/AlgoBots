@@ -1,6 +1,5 @@
 ﻿using _100YearPortfolio.Clients;
 using _100YearPortfolio.Portfolio;
-using SoftFx;
 using System.Text;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
@@ -8,31 +7,12 @@ using File = TickTrader.Algo.Api.File;
 
 namespace _100YearPortfolio
 {
-    [TradeBot(DisplayName = FullBotName, Category = CommonConstants.Category, Version = "1.0")]
+    [TradeBot(DisplayName = FullBotName, Category = "SoftFX Public", Version = "1.0")]
     public class PortfolioBot : TradeBot
     {
         private const int ErrorTimeout = 30000;
 
         public const string FullBotName = "100YearPortfolioBot";
-
-
-        [Parameter]
-        public bool UseDebug { get; set; }
-
-        [Parameter(IsRequired = true)]
-        public string SheetLink { get; set; }
-
-        [Parameter(IsRequired = false)]
-        [FileFilter("Creds file (*.json)", "*.json")]
-        public File CredsFile { get; set; }
-
-
-        internal PortfolioConfig Config => _config;
-
-        public double CalculationBalance => Config.BalanceType.IsBalance() ? Account.Balance : Account.Equity;
-
-        public double EquityChange => MarketSymbol.PercentCoef * (1.0 - Account.Equity / _lastCalculatedEquity);
-
 
         private BaseSheetClient _client;
         private PortfolioConfig _config;
@@ -45,14 +25,36 @@ namespace _100YearPortfolio
         private string _balancePrecision;
 
 
+        [Parameter(IsRequired = true)]
+        public string SheetLink { get; set; }
+
+        [Parameter(IsRequired = false)]
+        [FileFilter("Creds file (*.json)", "*.json")]
+        public File CredsFile { get; set; }
+
+
+        internal PortfolioConfig Config => _config;
+
+        internal double CalculationBalance => Config.BalanceType.IsBalance() ? Account.Balance : Account.Equity;
+
+        internal double EquityChange => 1.0 - Account.Equity / _lastCalculatedEquity;
+
+
         protected override void Init()
         {
+            string GetBalanceFormat()
+            {
+                return $"F{Currencies[Account.BalanceCurrency].Digits}";
+            }
+
             _lastCalculatedEquity = Account.Equity;
 
+            _market = new MarketState(this);
             _client = ClientFactory.GetClient(SheetLink, CredsFile.FullPath);
 
-            if (!TryValidateGlobalState(out var error) || !_client.TryReadConfig(out _config, out error)
-                || !_client.TryReadPortfolio(this, out _market, out error))
+            if (!TryValidateAccountSettings(out var error) ||
+                !_client.TryReadConfig(out _config, out error) ||
+                !_client.TryFillMarket(_market, out error))
                 StopBotWithError(error);
             else
             {
@@ -70,16 +72,18 @@ namespace _100YearPortfolio
                     RecalculateAction = RememberEquity,
                 };
 
-                Account.BalanceUpdated += Account_BalanceUpdated;
+                Account.NetPositions.Modified += NetPositionsModified;
+                Account.BalanceUpdated += AccountBalanceUpdated;
+                Account.Orders.Opened += OrdersOpened;
 
-                ThreadPool.QueueUserWorkItem(UpdateLoop);
+                _ = UpdateLoop();
             }
         }
 
         protected override void OnStop() => _client?.Dispose();
 
 
-        private async void UpdateLoop(object _)
+        private async Task UpdateLoop()
         {
             if (await FlushSheetStatus())
                 while (!IsStopped)
@@ -113,6 +117,13 @@ namespace _100YearPortfolio
                 }
         }
 
+
+        private void AccountBalanceUpdated() => _marketState.Recalculate(UtcNow);
+
+        private void OrdersOpened(OrderOpenedEventArgs _) => Status.WriteLine(BuildCurrentStatus());
+
+        private void NetPositionsModified(NetPositionModifiedEventArgs _) => Status.WriteLine(BuildCurrentStatus());
+
         private string BuildCurrentStatus()
         {
             var sb = new StringBuilder(1 << 10);
@@ -132,13 +143,6 @@ namespace _100YearPortfolio
             return sb.ToString();
         }
 
-        private void Account_BalanceUpdated() => _marketState.Recalculate(UtcNow);
-
-        internal void PrintDebug(string msg)
-        {
-            if (UseDebug)
-                Print(msg);
-        }
 
         private Task RememberEquity()
         {
@@ -147,7 +151,7 @@ namespace _100YearPortfolio
             return Task.CompletedTask;
         }
 
-        private bool TryValidateGlobalState(out string error)
+        private bool TryValidateAccountSettings(out string error)
         {
             error = null;
 
@@ -155,13 +159,6 @@ namespace _100YearPortfolio
                 error = $"Only Net account is available";
 
             return string.IsNullOrEmpty(error);
-        }
-
-        private string GetBalanceFormat()
-        {
-            var smb = Currencies[Account.BalanceCurrency];
-
-            return $"F{smb.Digits}";
         }
 
         private async Task CriticalLossMoney()
@@ -204,7 +201,9 @@ namespace _100YearPortfolio
 
         private void StopBotWithError(string error)
         {
-            Account.BalanceUpdated -= Account_BalanceUpdated;
+            Account.NetPositions.Modified -= NetPositionsModified;
+            Account.BalanceUpdated -= AccountBalanceUpdated;
+            Account.Orders.Opened -= OrdersOpened;
 
             PrintError(error);
             Status.WriteLine(error);

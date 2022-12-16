@@ -53,13 +53,13 @@ namespace SoftFx
         protected static class Rule
         {
             public static bool CheckNumberGt<T>(string name, T value, T border) where T : IComparable =>
-                value.CompareTo(border) == 1 ? true : ThrowException(name, value, $"should be greater than {border}");
+                value.CompareTo(border) == 1 || ThrowException(name, value, $"should be greater than {border}");
 
             public static bool CheckNumberGte<T>(string name, T value, T border) where T : IComparable =>
-                value.CompareTo(border) != -1 ? true : ThrowException(name, value, $"should be greater or equals than {border}");
+                value.CompareTo(border) != -1 || ThrowException(name, value, $"should be greater or equals than {border}");
 
             public static bool CheckNumberLte<T>(string name, T value, T border) where T : IComparable =>
-                value.CompareTo(border) != 1 ? true : ThrowException(name, value, $"should be less or equals than {border}");
+                value.CompareTo(border) != 1 || ThrowException(name, value, $"should be less or equals than {border}");
 
             public static bool CheckNumberInRange<T>(string name, T value, T lowBorder, T highBorder) where T : IComparable
             {

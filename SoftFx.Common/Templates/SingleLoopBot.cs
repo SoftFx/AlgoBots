@@ -107,7 +107,7 @@ namespace SoftFx.Routines
         {
             while (currentIteration >= IterationId && !IsStopRequested)
             {
-                await Task.Delay(System.Math.Max(LoopTimeout / 5, 1), CancelToken);
+                await Task.Delay(Math.Max(LoopTimeout / 5, 1), CancelToken);
             }
             return IterationId;
         }

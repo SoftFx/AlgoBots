@@ -1,12 +1,13 @@
 ﻿using SoftFx;
 using System;
+using System.Text;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Api.Math;
 
 namespace MovingAverageBot
 {
-    [TradeBot(DisplayName = "MovingAverageBot", Category = CommonConstants.Category, Version = "1.1")]
+    [TradeBot(DisplayName = "MovingAverageBot", Category = "SoftFX Public", Version = "1.3")]
     public class MovingAverageBot : TradeBot
     {
         [Parameter(DisplayName = "MaximumRisk", DefaultValue = 0.02)]
@@ -40,8 +41,11 @@ namespace MovingAverageBot
                 return;
             }
 
-            OutputParametrsOnStatus();
-            OutputParametrsOnLog();
+            var info = GetParamsInfo();
+
+            Status.Write(info);
+            Print(info);
+
             _iMA = Indicators.MovingAverage(Bars.Close, MovingPeriod, MovingShift);
         }
 
@@ -72,10 +76,8 @@ namespace MovingAverageBot
             return 0;
         }
 
-        private double LotsOptimized(OrderSide side)
+        private double LotsOptimized()
         {
-            var symbol = side == OrderSide.Buy ? Symbol.Ask : Symbol.Bid;
-
             var margin = Account.CalculateOrderMargin(Symbol.Name, OrderType.Market, OrderSide.Buy, 1.0, null, Symbol.Ask, null);
 
             if (!margin.HasValue)
@@ -111,32 +113,30 @@ namespace MovingAverageBot
         {
             double ma = _iMA.Average[0];
 
-            //Print($"Work {ma}"); //for test
+            OrderSide? side = null;
 
             if (Bars.Open[1] > ma && Bars.Close[1] < ma)
             {
-                double openVolume = LotsOptimized(OrderSide.Sell);
-                Print($"OpenVolume: {openVolume}, MinTradeVolume: {Symbol.MinTradeVolume}");
-                if (openVolume != double.NaN && OpenMarketOrder(OrderSide.Sell, openVolume).ResultCode == OrderCmdResultCodes.Ok)
-                    Print($"Open volume = {openVolume}, price = {Bid}");
-                return;
+                side = OrderSide.Sell;
+            }
+            else if (Bars.Open[1] < ma && Bars.Close[1] > ma)
+            {
+                side = OrderSide.Buy;
             }
 
-            if (Bars.Open[1] < ma && Bars.Close[1] > ma)
+            if (side != null)
             {
-                double openVolume = LotsOptimized(OrderSide.Buy);
+                double openVolume = LotsOptimized();
                 Print($"OpenVolume: {openVolume}, MinTradeVolume: {Symbol.MinTradeVolume}");
-                if (openVolume != double.NaN && OpenMarketOrder(OrderSide.Buy, openVolume).ResultCode == OrderCmdResultCodes.Ok)
-                    Print($"Open volume = {openVolume}, price = {Ask}");
-                return;
+
+                if (!double.IsNaN(openVolume) && OpenMarketOrder(side.Value, openVolume).ResultCode == OrderCmdResultCodes.Ok)
+                    Print($"Open volume = {openVolume}, price = {(side.Value == OrderSide.Sell ? Bid : Ask)}");
             }
         }
 
         private void CheckForClose()
         {
             double ma = _iMA.Average[0];
-
-            //Print($"Work {ma}"); //for test
 
             if (Account.Type == AccountTypes.Gross)
                 CheckCloseForGross(ma);
@@ -166,16 +166,16 @@ namespace MovingAverageBot
 
         private void CheckCloseForGross(double ma)
         {
-            foreach (Order order in Account.Orders)
+            foreach (Order order in Account.OrdersBySymbol(Symbol.Name))
             {
-                if (order.Side == OrderSide.Buy && order.Symbol == Symbol.Name)
+                if (order.Side == OrderSide.Buy)
                 {
                     if (Bars.Open[1] > ma && Bars.Close[1] < ma)
                         CloseCurrentOrderForGross(order);
                     break;
                 }
 
-                if (order.Side == OrderSide.Sell && order.Symbol == Symbol.Name)
+                if (order.Side == OrderSide.Sell)
                 {
                     if (Bars.Open[1] < ma && Bars.Close[1] > ma)
                         CloseCurrentOrderForGross(order);
@@ -216,14 +216,17 @@ namespace MovingAverageBot
             Status.WriteLine($"Lose streak: {_losses}");
         }
 
-        private void OutputParametrsOnLog()
+        private string GetParamsInfo()
         {
-            string message = $"";
-            message += $"Maximum Risk: {MaximumRisk:F4} \n";
-            message += $"Decrease Factor: {DecreaseFactor:F4} \n";
-            message += $"Moving Period: {MovingPeriod} \n";
-            message += $"Moving Shift: {MovingShift}";
-            Print(message);
+            var sb = new StringBuilder(1 << 10);
+
+            sb.AppendLine($"Maximum Risk: {MaximumRisk:F4}")
+              .AppendLine($"Decrease Factor: {DecreaseFactor:F4}")
+              .AppendLine($"Moving Period: {MovingPeriod}")
+              .AppendLine($"Moving Shift: {MovingShift}")
+              .AppendLine($"Lose streak: {_losses}");
+
+            return sb.ToString();
         }
 
         private void Validations()
