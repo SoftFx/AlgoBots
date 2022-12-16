@@ -3,6 +3,12 @@ run-name: AlgoPublic build ${{ inputs.releaseVersion }}
 on:
   push:
     branches: [master, develop]
+
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: 'Release version'
+        type: string
 env:
   ARTIFACT_NAME: 'Algo PublicBots'
   BUILD_OUTPUT_FOLDER: .github/build/build.output
