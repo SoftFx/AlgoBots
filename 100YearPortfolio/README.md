@@ -2,7 +2,7 @@
 ===
 
 ## Idea
-Based on the stock distribution in the *Portfolio* sheet, this bot open and changes positions according to desired distribution.
+Based on the stock distribution in the *Portfolio* sheet, this bot opens and changes positions according to desired distribution.
 
 ## Description
 The bot opens/closes Limit orders so that the total amount of money invested by Symbol (orders + positions) is equal to the percentage of the account balance in *Portfolio* every N minutes.
