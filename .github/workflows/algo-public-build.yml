@@ -60,7 +60,7 @@ jobs:
     needs: [build, create-tag]
     env:
       ReleaseNote: "ReleaseNote.md"
-      GithubToken: ${{ secrets.BUILDRELEASESECRET }}
+      GithubToken: ${{ secrets.RELEASE_TOKEN }}
     steps:
       - uses: actions/checkout@v3
 
