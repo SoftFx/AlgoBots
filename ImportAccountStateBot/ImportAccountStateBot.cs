@@ -19,7 +19,7 @@ namespace ImportAccountStateBot
     }
 
 
-    [TradeBot(Category = "SoftFX Public", SetupMainSymbol = false, DisplayName = "ImportAccountStateBot", Version = "1.2")]
+    [TradeBot(Category = "SoftFX Public", SetupMainSymbol = false, DisplayName = "ImportAccountStateBot", Version = "1.3")]
     public class ImportAccountStateBot : SingleLoopBot<ImportAccountStateBotConfig>, ITimeProvider
     {
         private const string ConfigFileName = "ImportAccountStateBot.tml";
