@@ -72,6 +72,12 @@ jobs:
       - name: Rename packages
         run: for FILE in ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo; do BASE_FILE="${FILE%.*}(${{ needs.create-tag.outputs.BUILD_TAG }}).ttalgo"; mv $FILE $BASE_FILE; done
 
+      - name: Upload artifact with new names
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.BUILD_OUTPUT_FOLDER }}
+
   create-release:
     runs-on: ubuntu-latest
     needs: [create-tag, update-package-names]
