@@ -60,11 +60,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Go to output folder
+      - run: cd ${{ env.BUILD_OUTPUT_FOLDER }}
+
       - name: Detected packages
-        run: ls -l ${{ env.BUILD_OUTPUT_FOLDER }}
+        run: ls -l
 
       - name: Rename packages
-        run: for FILENAME in ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo; do mv $FILENAME Unix_$FILENAME; done
+        run: for FILENAME in *.ttalgo; do mv $FILENAME Unix_$FILENAME; done
 
   create-release:
     runs-on: ubuntu-latest
