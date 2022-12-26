@@ -54,10 +54,21 @@ jobs:
           message: "Release ${{ steps.save-tag.outputs.tag }}"
           force_push_tag: true
 
+  update-package-names:
+    runs-on: ubuntu-latest
+    needs: create-tag
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Detected packages
+        run: echo "::ls -l"
+
+      - name: Rename packages
+        run: for FILENAME in *; do mv $FILENAME Unix_$FILENAME; done
 
   create-release:
     runs-on: ubuntu-latest
-    needs: [build, create-tag]
+    needs: [create-tag, update-package-names]
     env:
       ReleaseNote: "ReleaseNote.md"
       GithubToken: ${{ secrets.RELEASE_TOKEN }}
