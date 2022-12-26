@@ -63,8 +63,8 @@ jobs:
       - name: Detected packages
         run: ls -l ${{ env.BUILD_OUTPUT_FOLDER }}
 
-      # - name: Rename packages
-      #   run: for FILENAME in ${{ env.BUILD_OUTPUT_FOLDER }}; do mv $FILENAME Unix_$FILENAME; done
+      - name: Rename packages
+        run: for FILENAME in ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo; do mv $FILENAME Unix_$FILENAME; done
 
   create-release:
     runs-on: ubuntu-latest
