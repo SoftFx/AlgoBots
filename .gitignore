@@ -303,4 +303,4 @@ __pycache__/
 
 # OpenCover UI analysis results
 OpenCover/
-.github/build/build.output/*
+.github/build/build.output/*.ttalgo

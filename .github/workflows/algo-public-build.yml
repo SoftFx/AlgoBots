@@ -26,7 +26,7 @@ jobs:
         dotnet-version: 6.0.x
 
     - name: Run PowerShell script
-      run: ${{env.BuildScriptPath}}
+      run: ${{ env.BuildScriptPath }}
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
@@ -63,8 +63,8 @@ jobs:
       - name: Detected packages
         run: ls -l ${{ env.BUILD_OUTPUT_FOLDER }}
 
-      - name: Rename packages
-        run: for FILE in ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo; do BASE_FILE="${FILE%.*}(${{ needs.create-tag.outputs.BUILD_TAG }}).ttalgo"; mv $FILE $BASE_FILE; done
+      # - name: Rename packages
+      #   run: for FILE in ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo; do BASE_FILE="${FILE%.*}(${{ needs.create-tag.outputs.BUILD_TAG }}).ttalgo"; mv $FILE $BASE_FILE; done
 
   create-release:
     runs-on: ubuntu-latest
