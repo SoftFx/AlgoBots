@@ -61,10 +61,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Detected packages
-        run: echo "::ls -l"
+        run: ls -l
 
       - name: Rename packages
-        run: for FILENAME in *; do mv $FILENAME Unix_$FILENAME; done
+        run: for FILENAME in ${{ env.BUILD_OUTPUT_FOLDER }}; do mv $FILENAME Unix_$FILENAME; done
 
   create-release:
     runs-on: ubuntu-latest
