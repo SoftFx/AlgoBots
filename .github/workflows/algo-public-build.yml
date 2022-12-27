@@ -76,7 +76,7 @@ jobs:
         run: ls -l ${{ env.BUILD_OUTPUT_FOLDER }}
 
       - name: Rename packages
-        run: for FILE in ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo; do BASE_FILE="${FILE%.*}\(release-${{ needs.create-tag.outputs.BUILD_VERSION }}\).ttalgo"; mv $FILE $BASE_FILE; done
+        run: for FILE in ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo; do BASE_FILE="${FILE%.*}'(release-${{ needs.create-tag.outputs.BUILD_VERSION }})'.ttalgo"; mv $FILE $BASE_FILE; done
 
       # - name: Remove old artifacts // cannot upload artifacts with the same name
       #   uses: geekyeggo/delete-artifact@v2
