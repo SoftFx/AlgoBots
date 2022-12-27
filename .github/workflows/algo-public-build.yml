@@ -80,7 +80,7 @@ jobs:
       - name: Remove old artifacts
         uses: geekyeggo/delete-artifact@v2
         with:
-          name: my-artifact
+          name: ${{ env.ARTIFACT_NAME }}
 
       - name: Upload artifact with new names
         uses: actions/upload-artifact@v3
