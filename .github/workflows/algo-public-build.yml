@@ -39,9 +39,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     outputs:
+      BUILD_VERSION: ${{ steps.save-version.outputs.version }}
       BUILD_TAG: ${{ steps.save-tag.outputs.tag }}
     steps:
       - uses: actions/checkout@v3
+
+      - id: save-version
+        name: Create version
+        run: echo "version=v${{ inputs.releaseVersion }}" >> $GITHUB_OUTPUT
 
       - id: save-tag
         name: Create tag
@@ -70,7 +75,12 @@ jobs:
         run: ls -l ${{ env.BUILD_OUTPUT_FOLDER }}
 
       - name: Rename packages
-        run: for FILE in ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo; do BASE_FILE="${FILE%.*}(${{ needs.create-tag.outputs.BUILD_TAG }}).ttalgo"; mv $FILE $BASE_FILE; done
+        run: for FILE in ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo; do BASE_FILE="${FILE%.*}\(release-${{ needs.create-tag.outputs.BUILD_VERSION }}\).ttalgo"; mv $FILE $BASE_FILE; done
+
+      - name: Remove old artifacts
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: my-artifact
 
       - name: Upload artifact with new names
         uses: actions/upload-artifact@v3
