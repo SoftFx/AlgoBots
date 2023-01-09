@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Runtime.CompilerServices;
+using System.Text;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 
@@ -41,6 +42,8 @@ namespace _100YearPortfolio
 
         private NetPosition Position => Account.NetPositions[OriginName];
 
+
+        private string FullName => $"{Alias}{(Alias != OriginName ? $"({OriginName})" : "")}";
 
         private double ActualMoney => _bot.CalculationBalance * Percent;
 
@@ -86,7 +89,7 @@ namespace _100YearPortfolio
             var openVolume = CalculateVolume(deltaMoney, deltaMoney > 0 ? bid : ask);
 
             _sb.Clear()
-               .Append($"{Alias}{(Alias != OriginName ? $"({OriginName})" : "")} - ")
+               .Append($"{FullName} - ")
                .Append($"{nameof(MaxOrderSize)} = {MaxOrderSize}, ")
                .Append($"expected = {Percent * PercentCoef:F2}%, ")
                .Append($"delta = {deltaPercent * PercentCoef:F2}% ({openVolume:0.#####} lots)")
@@ -100,16 +103,16 @@ namespace _100YearPortfolio
             if (Symbol.IsNull)
                 return;
 
-            await CancelOrderChain();
+            await CancelOrder();
 
             var expectedMoney = ActualMoney - CalculateUsedMoney(out var bid, out var ask);
 
             _bot.Print($"{OriginName} money delta = {expectedMoney:F6}");
 
-            await OpenOrderChain(expectedMoney, expectedMoney > 0 ? bid : ask);
+            await OpenOrder(expectedMoney, expectedMoney > 0 ? bid : ask);
         }
 
-        private Task OpenOrderChain(double money, double price)
+        private Task OpenOrder(double money, double price)
         {
             var expectedVolume = Math.Min(CalculateVolume(Math.Abs(money), price), MaxOrderSize).Round(Symbol.TradeVolumeStep);
             var expectedSide = money.Gte(0.0) ? OrderSide.Buy : OrderSide.Sell;
@@ -122,7 +125,7 @@ namespace _100YearPortfolio
                    Task.CompletedTask;
         }
 
-        private Task CancelOrderChain()
+        private Task CancelOrder()
         {
             var orders = Account.OrdersBySymbol(OriginName);
             var cancelTasks = new List<Task>(orders.Count);
@@ -157,19 +160,22 @@ namespace _100YearPortfolio
             return money * Symbol.ContractSize;
         }
 
-        private async Task ExecuteRequest(Func<Task<OrderCmdResult>> request)
+        private async Task ExecuteRequest(Func<Task<OrderCmdResult>> request, [CallerMemberName] string action = "")
         {
             var attempt = 0;
+            OrderCmdResult result = null;
 
             while (++attempt < MaxRejectAttempts)
             {
-                var res = await request();
+                result = await request();
 
-                if (res.IsCompleted)
+                if (result.IsCompleted)
                     return;
                 else
                     await _bot.Delay(DelayBetweenFailedRequests);
             }
+
+            _bot.Alert.Print($"Cannot {action} {FullName}. Error = {result?.ResultCode}");
         }
 
         private OpenOrderRequest BuildRequest(double volume, double price, OrderSide side)
