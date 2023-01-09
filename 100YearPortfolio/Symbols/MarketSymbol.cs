@@ -8,7 +8,7 @@ namespace _100YearPortfolio
     {
         internal string SymbolOrigin { get; init; }
 
-        internal double? MaxLotSize { get; init; }
+        internal double? MaxOrderSize { get; init; }
     }
 
 
@@ -32,7 +32,7 @@ namespace _100YearPortfolio
 
         public double Percent { get; }
 
-        public double MaxLotSize { get; }
+        public double MaxOrderSize { get; }
 
 
         private Symbol Symbol => _bot.Symbols[OriginName];
@@ -55,12 +55,12 @@ namespace _100YearPortfolio
             Percent = percent;
 
             OriginName = settings.SymbolOrigin ?? aliasName;
-            MaxLotSize = settings.MaxLotSize ?? Symbol.MaxTradeVolume;
+            MaxOrderSize = settings.MaxOrderSize ?? Symbol.MaxTradeVolume;
 
             if (!Symbol.IsNull)
             {
-                if (MaxLotSize.Lt(MinLotSize))
-                    _error = $"{nameof(MaxLotSize)} less than MinTradeVolume = {MinLotSize}!";
+                if (MaxOrderSize.Lt(MinLotSize))
+                    _error = $"{nameof(MaxOrderSize)} less than MinTradeVolume = {MinLotSize}!";
                 else
                     Symbol.Subscribe();
             }
@@ -87,7 +87,7 @@ namespace _100YearPortfolio
 
             _sb.Clear()
                .Append($"{Alias}{(Alias != OriginName ? $"({OriginName})" : "")} - ")
-               .Append($"{nameof(MaxLotSize)} = {MaxLotSize}, ")
+               .Append($"{nameof(MaxOrderSize)} = {MaxOrderSize}, ")
                .Append($"expected = {Percent * PercentCoef:F2}%, ")
                .Append($"delta = {deltaPercent * PercentCoef:F2}% ({openVolume:0.#####} lots)")
                .Append($", rate {bid}/{ask}");
@@ -111,7 +111,7 @@ namespace _100YearPortfolio
 
         private Task OpenOrderChain(double money, double price)
         {
-            var expectedVolume = Math.Min(CalculateVolume(Math.Abs(money), price), MaxLotSize).Round(Symbol.TradeVolumeStep);
+            var expectedVolume = Math.Min(CalculateVolume(Math.Abs(money), price), MaxOrderSize).Round(Symbol.TradeVolumeStep);
             var expectedSide = money.Gte(0.0) ? OrderSide.Buy : OrderSide.Sell;
 
             _bot.Print($"{OriginName} expected volume = {expectedVolume:F8}, min volume = {MinLotSize}");

@@ -8,7 +8,7 @@ namespace _100YearPortfolio
     {
         private const string SymbolNameHeader = "Name";
         private const string PercentNameHeader = "Distribution";
-        private const string MaxLotSizeHeader = "MaxLotSize";
+        private const string MaxOrderSizeHeader = "MaxOrderSize";
         private const string OriginSymbolHeader = "Symbol";
 
         private readonly static char[] _noteSeparators = new char[] { '\n', ';' };
@@ -149,7 +149,7 @@ namespace _100YearPortfolio
             var rows = note.Split(_noteSeparators, StringSplitOptions.RemoveEmptyEntries);
 
             var symbol = (string)null;
-            var maxLotSize = double.NaN;
+            var maxOrderSize = double.NaN;
 
             foreach (var row in rows)
             {
@@ -160,7 +160,7 @@ namespace _100YearPortfolio
 
                 var okParseValue = parts[0] switch
                 {
-                    MaxLotSizeHeader => TryParseInvariantDouble(parts[1], out maxLotSize),
+                    MaxOrderSizeHeader => TryParseInvariantDouble(parts[1], out maxOrderSize),
                     OriginSymbolHeader => CheckString(parts[1], out symbol),
                     _ => false
                 };
@@ -172,7 +172,7 @@ namespace _100YearPortfolio
             return new NoteSettings()
             {
                 SymbolOrigin = symbol,
-                MaxLotSize = double.IsNaN(maxLotSize) ? null : maxLotSize,
+                MaxOrderSize = double.IsNaN(maxOrderSize) ? null : maxOrderSize,
             };
         }
 

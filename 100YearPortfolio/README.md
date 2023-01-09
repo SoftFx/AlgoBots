@@ -81,7 +81,7 @@ Additional parameters should be written as Note for the first cell.
 #### **Symbol**
 This is the symbol name on the server side which is used to open orders. If the symbol isn't specified, the value **Name** is used by default. String value.
 
-#### **MaxLotSize**
+#### **MaxOrderSize**
 Upper limit for an order volume. Positive double value. Default value is **Symbol.MaxTradeVolume**
 
 ## Filling rules
@@ -97,7 +97,7 @@ Upper limit for an order volume. Positive double value. Default value is **Symbo
 4. If **Delta money** is positive value then the desired order side is Buy else Sell;
 5. The **Expected volume** is calculated using **Delta money**;
 6. Ignore symbol if **Expected volume** < **Symbol.MinTradeVolume**;
-7. Trying to open an order with a volume = Min(**Expected volume**, **Symbol.MinTradeVolume**, **MaxLotSize**);
+7. Trying to open an order with a volume = Min(**Expected volume**, **Symbol.MinTradeVolume**, **MaxOrderSize**);
 8. All orders are opened with Expiration = **Once Per N min** + 1.
 
 ## Status page (available only with cred file)
