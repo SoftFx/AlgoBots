@@ -72,7 +72,7 @@ A name of the symbol, which will be used to open orders. String value.
 #### **Distribution**
 A percentage of money from the account balance for opening orders. Double percent parameter (must end with %). If the value is positive, then the position side is Buy. If the value is negative, then the position side is Sell. **Total sum of the column's absolute values should be less or equal 100%.**
 
-### Additional settings (optional, **available only with cred file**)
+### Additional settings (optional)
 
 ![Portfolio Page](screens/NoteSettings.png)
 
