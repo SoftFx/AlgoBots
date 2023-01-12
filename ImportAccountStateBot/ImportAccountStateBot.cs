@@ -18,7 +18,9 @@ namespace ImportAccountStateBot
     }
 
 
-    [TradeBot(Category = "SoftFX Public", SetupMainSymbol = false, DisplayName = "ImportAccountStateBot", Version = "1.3")]
+    [TradeBot(Category = "SoftFX Public", SetupMainSymbol = false, DisplayName = "ImportAccountStateBot", Version = "1.3",
+              Description = "Based on the stock distribution in the Portfolio sheet, this bot tries to open and change positions according" +
+                            " to desired distribution.")]
     public class ImportAccountStateBot : SingleLoopBot<ImportAccountStateBotConfig>, ITimeProvider
     {
         private const string ConfigFileName = "ImportAccountStateBot.tml";

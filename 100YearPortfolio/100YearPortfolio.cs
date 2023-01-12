@@ -7,7 +7,7 @@ using File = TickTrader.Algo.Api.File;
 
 namespace _100YearPortfolio
 {
-    [TradeBot(DisplayName = FullBotName, Category = "SoftFX Public", Version = "1.0",
+    [TradeBot(DisplayName = FullBotName, Category = "SoftFX Public", Version = "1.1",
               Description = "This bot helps to integrate bots written on another programming languange to SoftFx Environment. " +
                             "Just write required trade state to csv file from python, r, mathlab and this bot will adjust orders and" +
                             " positions to required state.")]
