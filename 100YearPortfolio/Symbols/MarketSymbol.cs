@@ -75,7 +75,7 @@ namespace _100YearPortfolio
         public string GetCurrentState()
         {
             if (Symbol.IsNull)
-                return string.Empty;
+                return $"{FullName} - Symbol not found!\n";
 
             if (!string.IsNullOrEmpty(_error))
                 return _error;

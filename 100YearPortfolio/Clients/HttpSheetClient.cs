@@ -83,7 +83,7 @@ namespace _100YearPortfolio.Clients
 
         private static List<ICell> GetUsedCells(IRow row)
         {
-            return (row?.Cells.Where(c => c.CellType != CellType.Blank) ?? Enumerable.Empty<ICell>()).ToList();
+            return (row?.Cells ?? Enumerable.Empty<ICell>()).ToList();
         }
     }
 }

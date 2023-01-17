@@ -34,6 +34,9 @@ namespace _100YearPortfolio
 
         public bool AddSymbol(string name, string alias, double percent, NoteSettings settings)
         {
+            name = name.Trim();
+            alias = alias.Trim();
+
             if (_symbols.ContainsKey(name))
                 return false;
 
