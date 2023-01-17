@@ -67,6 +67,8 @@ namespace _100YearPortfolio
                 else
                     Symbol.Subscribe();
             }
+            else
+                _bot.PrintError($"Symbol {FullName} not found!");
         }
 
 
