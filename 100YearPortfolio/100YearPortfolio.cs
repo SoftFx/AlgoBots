@@ -128,9 +128,7 @@ namespace _100YearPortfolio
         {
             var sb = new StringBuilder(1 << 10);
 
-            sb.AppendLine($"{UtcNow}").AppendLine()
-              .AppendLine($"{Config}").AppendLine()
-              .AppendLine($"Account:")
+            sb.AppendLine($"Account:")
               .AppendLine($"{nameof(Account.Balance)} = {Account.Balance.ToString(_balancePrecision)}")
               .AppendLine($"{nameof(Account.Equity)} = {Account.Equity.ToString(_balancePrecision)}")
               .AppendLine()
@@ -138,7 +136,10 @@ namespace _100YearPortfolio
               .AppendLine($"Saved equity = {_lastCalculatedEquity.ToString(_balancePrecision)}, equity change: {EquityChange:F2}%")
               .AppendLine($"Resave equity value after {_equityState.GetLeftTime(UtcNow)} sec...")
               .AppendLine()
-              .AppendLine($"Recalculation symbols after {_marketState.GetLeftTime(UtcNow)} sec...");
+              .AppendLine($"Recalculation symbols after {_marketState.GetLeftTime(UtcNow)} sec...")
+              .AppendLine()
+              .AppendLine($"{UtcNow}").AppendLine()
+              .AppendLine($"{Config}").AppendLine();
 
             return sb.ToString();
         }

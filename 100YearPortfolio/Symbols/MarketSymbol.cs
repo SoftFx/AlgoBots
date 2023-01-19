@@ -90,12 +90,15 @@ namespace _100YearPortfolio
 
             var openVolume = CalculateVolume(deltaMoney, deltaMoney > 0 ? bid : ask);
 
+            if (openVolume.Lt(Symbol.MinTradeVolume))
+                openVolume = 0.0;
+
             _sb.Clear()
                .Append($"{FullName} - ")
-               .Append($"{nameof(MaxOrderSize)} = {MaxOrderSize}, ")
-               .Append($"expected = {Percent * PercentCoef:F2}%, ")
-               .Append($"delta = {deltaPercent * PercentCoef:F2}% ({openVolume:0.#####} lots)")
-               .Append($", rate {bid}/{ask}");
+               .Append($"Expected = {Percent * PercentCoef:F2}%, ")
+               .Append($"delta = {deltaPercent * PercentCoef:F2}% ({openVolume:0.#####} lots), ")
+               .Append($"rate {bid}/{ask}, ")
+               .Append($"{nameof(MaxOrderSize)} = {MaxOrderSize}");
 
             return _sb.AppendLine().ToString();
         }
