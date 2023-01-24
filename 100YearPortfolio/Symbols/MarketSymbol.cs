@@ -116,7 +116,7 @@ namespace _100YearPortfolio
 
         private Task OpenOrder(double money, double price)
         {
-            var expectedVolume = Math.Min(CalculateVolume(Math.Abs(money), price), MaxOrderSize).Round(Symbol.TradeVolumeStep);
+            var expectedVolume = Math.Min(CalculateVolume(Math.Abs(money), price), MaxOrderSize).Floor(Symbol.TradeVolumeStep);
             var expectedSide = money.Gte(0.0) ? OrderSide.Buy : OrderSide.Sell;
 
             _bot.Print($"{OriginName} expected volume = {expectedVolume:F8}, min volume = {MinLotSize}");
