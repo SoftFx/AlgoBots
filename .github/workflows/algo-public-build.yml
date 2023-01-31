@@ -131,6 +131,6 @@ jobs:
           name: ${{ needs.create-tag.outputs.BUILD_TAG }}
           tag: ${{ needs.create-tag.outputs.BUILD_TAG }}
           token: ${{ env.GithubToken }}
-          artifacts: ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo
+          artifacts: "${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo, ${{ env.BUILD_OUTPUT_FOLDER }}/*.js"
           bodyFile: ${{ env.ReleaseNote }}
           allowUpdates: true
