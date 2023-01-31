@@ -15,6 +15,21 @@ env:
   BUILD_OUTPUT_FOLDER: .github/build/build.output
 
 jobs:
+  run-info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get author name
+        run: echo "${{ github.actor }}"
+
+      - name: Get repository url
+        run: echo "${{ github.repositoryUrl }}"
+
+      - name: Get repository name
+        run: echo "${{ github.repository }}"
+
+      - name: Get server url
+        run: echo "${{ github.server_url }}"
+
   build:
     runs-on: windows-latest
     env:
