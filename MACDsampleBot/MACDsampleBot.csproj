@@ -10,7 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="TickTrader.Algo.Api" Version="1.5.1-beta.2" />
-    <PackageReference Include="TickTrader.Algo.Tools" Version="1.0.0">
+    <PackageReference Include="TickTrader.Algo.Tools" Version="1.0.1-beta.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
