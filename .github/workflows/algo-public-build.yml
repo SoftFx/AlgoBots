@@ -12,6 +12,7 @@ on:
 env:
   ARTIFACT_NAME_RAW: 'Algo PublicBots Build'
   ARTIFACT_NAME: 'Algo PublicBots Release'
+  METADATA_FILE_NAME: 'RepositoryInfo'
   BUILD_OUTPUT_FOLDER: .github/build/build.output
 
 jobs:
@@ -110,11 +111,10 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.BUILD_OUTPUT_FOLDER }}
 
-  build-metadata-file:
+  build-global-metadata-file:
     runs-on: windows-latest
     needs: update-package-names
     env:
-      MetadataFileName: "RepositoryInfo"
       MergeScriptPath: .github/build/merge_metadata_script.ps1
     steps:
       - uses: actions/checkout@v3
@@ -126,7 +126,7 @@ jobs:
           path: ${{ env.BUILD_OUTPUT_FOLDER }}
 
       - name: Run PowerShell merge script
-        run: ${{ env.MergeScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --resultFileName=${{ env.MetadataFileName }}
+        run: ${{ env.MergeScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --resultFileName=${{ env.METADATA_FILE_NAME }}
 
       - name: Upload artifact with new names
         uses: actions/upload-artifact@v3
@@ -136,7 +136,7 @@ jobs:
 
   create-release:
     runs-on: ubuntu-latest
-    needs: [create-tag, build-metadata-file]
+    needs: [create-tag, build-global-metadata-file]
     env:
       ReleaseNote: "ReleaseNote.md"
       GithubToken: ${{ secrets.RELEASE_TOKEN }}
@@ -155,6 +155,6 @@ jobs:
           name: ${{ needs.create-tag.outputs.BUILD_TAG }}
           tag: ${{ needs.create-tag.outputs.BUILD_TAG }}
           token: ${{ env.GithubToken }}
-          artifacts: "${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo, ${{ env.BUILD_OUTPUT_FOLDER }}/${{ needs.build-metadata-file.env.MetadataFileName }}.json"
+          artifacts: "${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo, ${{ env.BUILD_OUTPUT_FOLDER }}/${{ env.METADATA_FILE_NAME }}.json"
           bodyFile: ${{ env.ReleaseNote }}
           allowUpdates: true
