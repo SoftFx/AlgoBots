@@ -15,7 +15,7 @@ env:
   BUILD_OUTPUT_FOLDER: .github/build/build.output
 
 jobs:
-  run-info:
+  get-repository-info:
     runs-on: ubuntu-latest
     outputs:
       REPOSITORY_FULL_URL: ${{ steps.save-author.outputs.author }}
@@ -37,6 +37,7 @@ jobs:
 
   build:
     runs-on: windows-latest
+    needs: get-repository-info
     env:
       BuildScriptPath: .github/build/build.ps1
     steps:
