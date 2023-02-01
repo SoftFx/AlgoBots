@@ -109,10 +109,10 @@ jobs:
         run: ls -l ${{ env.BUILD_OUTPUT_FOLDER }}
 
       - name: Run PowerShell rename packages script
-        run: ${{ env.RenamePackagesScriptPath }} --sourceDir=$GITHUB_WORKSPACE/${{ env.BUILD_OUTPUT_FOLDER }} --releaseVersion=${{ inputs.releaseVersion }} --isPreRelese=${{ inputs.isPreRelease }}
+        run: ${{ env.RenamePackagesScriptPath }} --sourceDir="$GITHUB_WORKSPACE/${{ env.BUILD_OUTPUT_FOLDER }}" --releaseVersion=${{ inputs.releaseVersion }} --isPreRelese=${{ inputs.isPreRelease }}
 
       - name: Run PowerShell merge meta files script
-        run: ${{ env.MergeScriptPath }} --sourceDir=$GITHUB_WORKSPACE/${{ env.BUILD_OUTPUT_FOLDER }} --resultFileName=${{ env.METADATA_FILE_NAME }}
+        run: ${{ env.MergeScriptPath }} --sourceDir="$GITHUB_WORKSPACE/${{ env.BUILD_OUTPUT_FOLDER }}" --resultFileName=${{ env.METADATA_FILE_NAME }}
 
       - name: Upload artifact with new names
         uses: actions/upload-artifact@v3
