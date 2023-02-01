@@ -1,6 +1,6 @@
 param ([Parameter(Mandatory)][String]$sourceDir,
 	   [Parameter(Mandatory)][String]$releaseVersion,
-	   [Bool]$isPreRelese=$false)
+	   [String]$isPreRelese="false")
 
 if(!(Test-Path $sourceDir)) {
 	Write-Host "ERROR: Path $sourceDir not found. Check the path and try again!" -ForegroundColor Red
@@ -13,7 +13,7 @@ else {
 
 		$directory = $file.DirectoryName
 		$baseName = $file.Basename
-		if ($isPreRelese){
+		if ($isPreRelese.ToLower() -eq "true"){
 			$prefix = "preRelease"
 		}
 		else {

@@ -105,13 +105,8 @@ jobs:
       - name: Detected packages
         run: ls -l ${{ env.BUILD_OUTPUT_FOLDER }}
 
-      - name: Run PowerShell rename preRelease packages script
-        if: ${{ inputs.isPreRelease }}
-        run: ${{ env.RenamePackagesScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --releaseVersion=${{ inputs.releaseVersion }} --isPreRelese={{ $True }}
-
-      - name: Run PowerShell rename release packages script
-        if: ${{ !inputs.isPreRelease }}
-        run: ${{ env.RenamePackagesScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --releaseVersion=${{ inputs.releaseVersion }} --isPreRelese={{ $False }}
+      - name: Run PowerShell rename packages script
+        run: ${{ env.RenamePackagesScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --releaseVersion=${{ inputs.releaseVersion }} --isPreRelese=${{ inputs.isPreRelease }}
 
       - name: Run PowerShell merge meta files script
         run: ${{ env.MergeScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --resultFileName=${{ env.METADATA_FILE_NAME }}
