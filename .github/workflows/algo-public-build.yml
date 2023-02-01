@@ -18,7 +18,7 @@ env:
   ARTIFACT_NAME_RAW: 'Algo PublicBots Build'
   ARTIFACT_NAME: 'Algo PublicBots Release'
   METADATA_FILE_NAME: 'RepositoryInfo'
-  BUILD_OUTPUT_FOLDER: .github/build/build.output
+  BUILD_OUTPUT_FOLDER: ./.github/build/build.output
 
 jobs:
   get-repository-info:
