@@ -9,6 +9,11 @@ on:
       releaseVersion:
         description: 'Release version'
         type: string
+      isPreRelease:
+        description: 'PreRelease'
+        type: boolean
+        required: true
+        default: false
 env:
   ARTIFACT_NAME_RAW: 'Algo PublicBots Build'
   ARTIFACT_NAME: 'Algo PublicBots Release'
@@ -82,9 +87,12 @@ jobs:
           message: "Release ${{ steps.save-tag.outputs.tag }}"
           force_push_tag: true
 
-  update-package-names:
-    runs-on: ubuntu-latest
-    needs: create-tag
+  build-artifacts:
+    runs-on: windows-latest
+    needs: build
+    env:
+      RenamePackagesScriptPath: .github/build/rename_packages.ps1
+      MergeScriptPath: .github/build/merge_metadata_script.ps1
     steps:
       - uses: actions/checkout@v3
 
@@ -97,35 +105,10 @@ jobs:
       - name: Detected packages
         run: ls -l ${{ env.BUILD_OUTPUT_FOLDER }}
 
-      - name: Rename packages
-        run: for FILE in ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo; do BASE_FILE="${FILE%.*}'(release-${{ needs.create-tag.outputs.BUILD_VERSION }})'.ttalgo"; mv $FILE $BASE_FILE; done
+      - name: Run PowerShell rename packages script
+        run: ${{ env.RenamePackagesScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --releaseVersion=${{ inputs.releaseVersion }}" --isPreRelese=${{ inputs.isPreRelease }}
 
-      # - name: Remove old artifacts // cannot upload artifacts with the same name
-      #   uses: geekyeggo/delete-artifact@v2
-      #   with:
-      #     name: ${{ env.ARTIFACT_NAME }}
-
-      - name: Upload artifact with new names
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.BUILD_OUTPUT_FOLDER }}
-
-  build-global-metadata-file:
-    runs-on: windows-latest
-    needs: update-package-names
-    env:
-      MergeScriptPath: .github/build/merge_metadata_script.ps1
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.BUILD_OUTPUT_FOLDER }}
-
-      - name: Run PowerShell merge script
+      - name: Run PowerShell merge meta files script
         run: ${{ env.MergeScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --resultFileName=${{ env.METADATA_FILE_NAME }}
 
       - name: Upload artifact with new names
@@ -136,7 +119,7 @@ jobs:
 
   create-release:
     runs-on: ubuntu-latest
-    needs: [create-tag, build-global-metadata-file]
+    needs: [create-tag, build-artifacts]
     env:
       ReleaseNote: "ReleaseNote.md"
       GithubToken: ${{ secrets.RELEASE_TOKEN }}
