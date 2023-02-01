@@ -18,7 +18,7 @@ env:
   ARTIFACT_NAME_RAW: 'Algo PublicBots Build'
   ARTIFACT_NAME: 'Algo PublicBots Release'
   METADATA_FILE_NAME: 'RepositoryInfo'
-  BUILD_OUTPUT_FOLDER: ./.github/build/build.output
+  BUILD_OUTPUT_FOLDER: .github/build/build.output
 
 jobs:
   get-repository-info:
@@ -27,6 +27,9 @@ jobs:
       REPOSITORY_FULL_URL: ${{ steps.save-author.outputs.author }}
       REPOSITORY_AUTHOR: ${{ steps.save-full-repository-url.outputs.full-server-url }}
     steps:
+      - name: Working directory
+        run: echo "$GITHUB_WORKSPACE"
+
       - id: save-author
         name: Get author name
         run: echo "author=${{ github.actor }}" >> $GITHUB_OUTPUT
