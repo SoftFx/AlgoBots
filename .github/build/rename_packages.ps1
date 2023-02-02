@@ -2,6 +2,12 @@ param ([Parameter(Mandatory)][String]$sourceDir,
 	   [Parameter(Mandatory)][String]$releaseVersion,
 	   [String]$isPreRelese="false")
 
+Write-Host "Raw sourceDir = $sourceDir"
+
+$sourceDir = $sourceDir -replace '\', '/'
+
+Write-Host "Fixed sourceDir = $sourceDir"
+
 if(!(Test-Path $sourceDir)) {
 	Write-Host "ERROR: Path $sourceDir not found. Check the path and try again!" -ForegroundColor Red
 }
