@@ -4,7 +4,7 @@ param ([Parameter(Mandatory)][String]$sourceDir,
 
 Write-Host "Raw sourceDir = $sourceDir"
 
-$sourceDir = $sourceDir -replace '\', '/'
+$sourceDir = $sourceDir -replace '[\\]', '/'
 
 Write-Host "Fixed sourceDir = $sourceDir"
 
