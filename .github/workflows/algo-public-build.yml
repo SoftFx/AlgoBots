@@ -91,7 +91,7 @@ jobs:
     runs-on: windows-latest
     needs: build
     env:
-      FullPathOutputFolder: ${{ github.workspace }}.github/build/build.output
+      FullPathOutputFolder: ${{ github.workspace }}/.github/build/build.output
       RenamePackagesScriptPath: .github/build/rename_packages.ps1
       MergeScriptPath: .github/build/merge_metadata_script.ps1
     steps:
