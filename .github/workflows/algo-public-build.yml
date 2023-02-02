@@ -110,7 +110,7 @@ jobs:
         run: ls -l ${{ env.FullPathOutputFolder }}
 
       - name: Run PowerShell rename packages script
-        run: echo "${{ env.RenamePackagesScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --releaseVersion=${{ inputs.releaseVersion }} --isPreRelese=${{ inputs.isPreRelease }}"
+        run: ${{ env.RenamePackagesScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --releaseVersion=${{ inputs.releaseVersion }} --isPreRelese=${{ inputs.isPreRelease }}
 
       - name: Run PowerShell merge meta files script
         run: ${{ env.MergeScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --resultFileName=${{ env.METADATA_FILE_NAME }}
