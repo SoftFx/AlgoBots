@@ -88,7 +88,7 @@ jobs:
           force_push_tag: true
 
   build-artifacts:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build
     env:
       FullPathOutputFolder: ${{ github.workspace }}/.github/build/build.output
@@ -110,9 +110,11 @@ jobs:
         run: ls -l ${{ env.FullPathOutputFolder }}
 
       - name: Run PowerShell rename packages script
+        shell: pwsh
         run: ${{ env.RenamePackagesScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --releaseVersion=${{ inputs.releaseVersion }} --isPreRelese=${{ inputs.isPreRelease }}
 
       - name: Run PowerShell merge meta files script
+        shell: pwsh
         run: ${{ env.MergeScriptPath }} --sourceDir=${{ env.BUILD_OUTPUT_FOLDER }} --resultFileName=${{ env.METADATA_FILE_NAME }}
 
       - name: Package directory after scripts
