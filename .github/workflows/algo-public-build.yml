@@ -106,6 +106,9 @@ jobs:
       - name: Full path to output folder
         run: echo ${{ env.FullPathOutputFolder }}
 
+      - name: Current directory
+        run: ls -l
+
       - name: Detected packages
         run: ls -l ${{ env.FullPathOutputFolder }}
 
