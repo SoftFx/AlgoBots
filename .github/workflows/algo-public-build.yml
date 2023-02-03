@@ -114,11 +114,11 @@ jobs:
 
       - name: Run PowerShell rename packages script
         shell: pwsh
-        run: ${{ env.RenamePackagesScriptPath }} --sourceDir ${{ env.BUILD_OUTPUT_FOLDER }} --releaseVersion ${{ inputs.releaseVersion }} --isPreRelese=${{ inputs.isPreRelease }}
+        run: ${{ env.RenamePackagesScriptPath }} -sourceDir ${{ env.BUILD_OUTPUT_FOLDER }} -releaseVersion ${{ inputs.releaseVersion }} -isPreRelese ${{ inputs.isPreRelease }}
 
       - name: Run PowerShell merge meta files script
         shell: pwsh
-        run: ${{ env.MergeScriptPath }} --sourceDir ${{ env.BUILD_OUTPUT_FOLDER }} --resultFileName ${{ env.METADATA_FILE_NAME }}
+        run: ${{ env.MergeScriptPath }} -sourceDir ${{ env.BUILD_OUTPUT_FOLDER }} -resultFileName ${{ env.METADATA_FILE_NAME }}
 
       - name: Package directory after scripts
         run: ls -l ${{ env.FullPathOutputFolder }}
