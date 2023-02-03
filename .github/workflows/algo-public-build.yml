@@ -24,8 +24,8 @@ jobs:
   get-repository-info:
     runs-on: ubuntu-latest
     outputs:
-      REPOSITORY_FULL_URL: ${{ steps.save-author.outputs.author }}
-      REPOSITORY_AUTHOR: ${{ steps.save-full-repository-url.outputs.full-server-url }}
+      REPOSITORY_AUTHOR: ${{ steps.save-author.outputs.author }}
+      REPOSITORY_FULL_URL: ${{ steps.save-full-repository-url.outputs.full-server-url }}
     steps:
       - id: save-author
         name: Get author name
@@ -102,12 +102,6 @@ jobs:
         with:
           name: ${{ env.ARTIFACT_NAME_RAW }}
           path: ${{ env.FullPathOutputFolder }}
-
-      - name: Full path to output folder
-        run: echo ${{ env.FullPathOutputFolder }}
-
-      - name: Current directory
-        run: ls -l
 
       - name: Detected packages
         run: ls -l ${{ env.FullPathOutputFolder }}
