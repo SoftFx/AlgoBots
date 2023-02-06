@@ -146,4 +146,5 @@ jobs:
           token: ${{ env.GithubToken }}
           artifacts: "${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo, ${{ env.BUILD_OUTPUT_FOLDER }}/${{ env.METADATA_FILE_NAME }}.json"
           bodyFile: ${{ env.ReleaseNote }}
+          prerelease: ${{ inputs.isPreRelease }}
           allowUpdates: true
