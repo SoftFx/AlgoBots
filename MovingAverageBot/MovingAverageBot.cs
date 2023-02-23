@@ -7,7 +7,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace MovingAverageBot
 {
-    [TradeBot(DisplayName = "MovingAverageBot", Category = "SoftFX Public", Version = "2.0",
+    [TradeBot(DisplayName = "MovingAverageBot", Category = "SoftFX Public", Version = "2.1",
               Description = "The bot opens a trade when the price crosses the MA.")]
     public class MovingAverageBot : TradeBot
     {
