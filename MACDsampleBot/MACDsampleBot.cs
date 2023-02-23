@@ -5,7 +5,7 @@ using TickTrader.Algo.Api.Indicators;
 
 namespace MACDsampleBot
 {
-    [TradeBot(DisplayName = "MACDsampleBot", Category = "SoftFX Public", Version = "2.0")]
+    [TradeBot(DisplayName = "MACDsampleBot", Category = "SoftFX Public", Version = "1.1")]
     public class MACDsampleBot : TradeBot
     {
         [Parameter(DisplayName = "TakeProfit", DefaultValue = 50)]

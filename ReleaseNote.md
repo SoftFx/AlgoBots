@@ -2,10 +2,10 @@
 
 ## New bots
 
-* **ImportAccountStateBot** has been added. More info you can find [here](https://github.com/SoftFx/AlgoBots/tree/develop/ImportAccountStateBot)
+* **ImportAccountStateBot** v.1.4 [here](https://github.com/SoftFx/AlgoBots/tree/develop/ImportAccountStateBot)
 
-* **100YearPortfolio** has been added. More info you can find [here](https://github.com/SoftFx/AlgoBots/tree/develop/100YearPortfolio)
+* **100YearPortfolio** v.1.2 [here](https://github.com/SoftFx/AlgoBots/tree/develop/100YearPortfolio)
 
-* **MACDsampleBot** has been added. More info you can find [here](https://github.com/SoftFx/AlgoBots/tree/develop/MACDsampleBot)
+* **MACDsampleBot** v.1.1 [here](https://github.com/SoftFx/AlgoBots/tree/develop/MACDsampleBot)
 
-* **MovingAverageBot** has been added. More info you can find [here](https://github.com/SoftFx/AlgoBots/tree/develop/MovingAverageBot)
+* **MovingAverageBot** v.2.0 [here](https://github.com/SoftFx/AlgoBots/tree/develop/MovingAverageBot)
