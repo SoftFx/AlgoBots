@@ -88,6 +88,7 @@ jobs:
           force_push_tag: true
 
   build-artifacts:
+    if: ${{ inputs.releaseVersion != '' }}
     runs-on: ubuntu-latest
     needs: build
     env:
