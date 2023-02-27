@@ -11,4 +11,4 @@
 * **MovingAverageBot** v.2.2 [here](https://github.com/SoftFx/AlgoBots/tree/develop/MovingAverageBot)
 
 
-* **MultipleTradeBots** MultipleTradeBots 1 v.1.0, MultipleTradeBots 2 v.1.0
+* **MultipleTradeBots** MultipleTradeBots 1 v.1.1, MultipleTradeBots 2 v.1.1

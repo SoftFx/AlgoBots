@@ -3,7 +3,7 @@ using TickTrader.Algo.Api;
 
 namespace MultipleTradeBots
 {
-    [TradeBot(Category = "My bots", DisplayName = "MultipleTradeBots 1 part", Version = "1.0",
+    [TradeBot(Category = "My bots", DisplayName = "MultipleTradeBots 1 part", Version = "1.1",
         Description = "My awesome MultipleTradeBots")]
     public class MultipleTradeBots : TradeBot
     {
