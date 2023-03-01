@@ -5,7 +5,9 @@ using TickTrader.Algo.Api.Indicators;
 
 namespace MACDsampleBot
 {
-    [TradeBot(DisplayName = "MACDsampleBot", Category = "SoftFX Public", Version = "1.1")]
+    [TradeBot(DisplayName = "MACDsampleBot", Category = "SoftFX Public", Version = "1.1",
+        Description = "The MACD expert advisor is designed to use moving average convergence and divergence in order to enter a trade. " +
+        "This will open up a trade once the signal line breaks through the MACD histogram and both are below (or above) the zero lines.")]
     public class MACDsampleBot : TradeBot
     {
         [Parameter(DisplayName = "TakeProfit", DefaultValue = 50)]

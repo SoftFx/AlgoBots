@@ -2,6 +2,11 @@
 ===
 
 ## Idea
+The Moving Average bot uses one Moving Average indicator to trade. If a candle crosses the Moving Average from below, the EA will enter a long position. 
+Vice Versa for the short position. If you enter a Padding in Pips, the bot will only open a buy position if the price is X pips above the Moving Average Line.
+
+## Formulas
+
 The bot opens a trade when the price crosses the MA. The volume of the lot count as:
 
     volume = FreeMargin * MaximumRisk / p
