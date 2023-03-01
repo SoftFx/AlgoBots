@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Nett" Version="0.15.0" />
+    <PackageReference Include="TickTrader.Algo.Api" Version="1.5.1-beta.2" />
+  </ItemGroup>
+</Project>
