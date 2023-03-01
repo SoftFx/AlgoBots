@@ -1,14 +1,11 @@
-# Algo Bots v.2.0
+# Algo Bots v.1.1
 
 ## New bots
 
-* **ImportAccountStateBot** v.2.0 [here](https://github.com/SoftFx/AlgoBots/tree/develop/ImportAccountStateBot)
+* **ImportAccountStateBot** has been added. More info you can find [here](https://github.com/SoftFx/AlgoBots/tree/develop/ImportAccountStateBot)
 
-* **100YearPortfolio** v.2.0 [here](https://github.com/SoftFx/AlgoBots/tree/develop/100YearPortfolio)
+* **100YearPortfolio** has been added. More info you can find [here](https://github.com/SoftFx/AlgoBots/tree/develop/100YearPortfolio)
 
-* **MACDsampleBot** v.2.0 [here](https://github.com/SoftFx/AlgoBots/tree/develop/MACDsampleBot)
+* **MACDsampleBot** has been added. More info you can find [here](https://github.com/SoftFx/AlgoBots/tree/develop/MACDsampleBot)
 
-* **MovingAverageBot** v.2.2 [here](https://github.com/SoftFx/AlgoBots/tree/develop/MovingAverageBot)
-
-
-* **MultipleTradeBots** MultipleTradeBots 1 v.1.1, MultipleTradeBots 2 v.1.1
+* **MovingAverageBot** has been added. More info you can find [here](https://github.com/SoftFx/AlgoBots/tree/develop/MovingAverageBot)

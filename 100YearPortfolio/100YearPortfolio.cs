@@ -7,7 +7,7 @@ using File = TickTrader.Algo.Api.File;
 
 namespace _100YearPortfolio
 {
-    [TradeBot(DisplayName = FullBotName, Category = "SoftFX Public", Version = "2.0",
+    [TradeBot(DisplayName = FullBotName, Category = "SoftFX Public", Version = "1.0",
               Description = "Based on the stock distribution in the Portfolio sheet, this bot tries to open and change positions according" +
                             " to desired distribution.")]
     public class PortfolioBot : TradeBot
