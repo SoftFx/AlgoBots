@@ -129,7 +129,7 @@ jobs:
     needs: [create-tag, build-artifacts]
     env:
       ReleaseNote: "ReleaseNote.md"
-      GithubToken: ${{ secrets.RELEASE_TOKEN }}
+      GithubToken: ${{ secrets.BUILDRELEASESECRET }}
     steps:
       - uses: actions/checkout@v3
 
