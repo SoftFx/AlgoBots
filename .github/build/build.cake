@@ -10,6 +10,10 @@ var buildDir = ConsoleOrBuildSystemArgument("BuildDir", "./");
 var artifactsDirName = ConsoleOrBuildSystemArgument("ArtifactsDirName", "build.output");
 var details = ConsoleOrBuildSystemArgument<DotNetVerbosity>("Details", DotNetVerbosity.Detailed);
 
+var buildMetainfo = ConsoleOrBuildSystemArgument<bool>("BuildMetadata", false);
+var repositoryUri = ConsoleOrBuildSystemArgument("Repository", "");
+var author = ConsoleOrBuildSystemArgument("Author", "");
+
 var sourcesPath = DirectoryPath.FromString(sourcesDir);
 var projectPath = sourcesPath.Combine("Repository.Public.sln");
 
@@ -70,6 +74,10 @@ Task("Build")
         msBuildSettings.WithProperty("CIBuild", "true");
         msBuildSettings.WithProperty("AlgoPackage_OutputPath", artifactsPath.MakeAbsolute(Context.Environment).ToString());
 
+        msBuildSettings.WithProperty("AlgoPackage_BuildMetadata", buildMetainfo.ToString());
+        msBuildSettings.WithProperty("AlgoPackage_Repository", repositoryUri);
+        msBuildSettings.WithProperty("AlgoPackage_Author", author);
+
         BuildProject(msBuildSettings);
     }
     finally
@@ -91,6 +99,10 @@ public void PrintArguments()
     Information("BuildDir: {0}", buildDir);
     Information("ArtifactsDirName: {0}", artifactsDirName);
     Information("Details: {0}", details);
+
+    Information("BuildMetadata: {0}", buildMetainfo);
+    Information("Repository: {0}", repositoryUri);
+    Information("Author: {0}", author);
 }
 
 public string ConsoleOrBuildSystemArgument(string name, string defautValue) => ConsoleOrBuildSystemArgument<string>(name, defautValue);

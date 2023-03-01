@@ -1,5 +1,4 @@
-﻿using SoftFx;
-using SoftFx.Routines;
+﻿using SoftFx.Routines;
 using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
@@ -19,7 +18,10 @@ namespace ImportAccountStateBot
     }
 
 
-    [TradeBot(Category = "SoftFX Public", SetupMainSymbol = false, DisplayName = "ImportAccountStateBot", Version = "1.2")]
+    [TradeBot(Category = "SoftFX Public", SetupMainSymbol = false, DisplayName = "ImportAccountStateBot", Version = "1.2",
+              Description = "This bot helps to integrate bots written on another programming languange to SoftFx Environment. " +
+                            "Just write required trade state to csv file from python, r, mathlab and this bot will adjust orders and" +
+                            " positions to required state.")]
     public class ImportAccountStateBot : SingleLoopBot<ImportAccountStateBotConfig>, ITimeProvider
     {
         private const string ConfigFileName = "ImportAccountStateBot.tml";

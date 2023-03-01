@@ -2,20 +2,48 @@ name: AlgoPublic build
 run-name: AlgoPublic build ${{ inputs.releaseVersion }}
 on:
   push:
-    branches: [master,develop]
+    branches: [master, develop]
 
   workflow_dispatch:
     inputs:
       releaseVersion:
         description: 'Release version'
         type: string
+      isPreRelease:
+        description: 'PreRelease'
+        type: boolean
+        required: true
+        default: false
 env:
-  ARTIFACT_NAME: 'Algo PublicBots'
+  ARTIFACT_NAME_RAW: 'Algo PublicBots Build'
+  ARTIFACT_NAME: 'Algo PublicBots Release'
+  METADATA_FILE_NAME: 'RepositoryInfo'
   BUILD_OUTPUT_FOLDER: .github/build/build.output
 
 jobs:
+  get-repository-info:
+    runs-on: ubuntu-latest
+    outputs:
+      REPOSITORY_AUTHOR: ${{ steps.save-author.outputs.author }}
+      REPOSITORY_FULL_URL: ${{ steps.save-full-repository-url.outputs.full-server-url }}
+    steps:
+      - id: save-author
+        name: Get author name
+        run: echo "author=${{ github.actor }}" >> $GITHUB_OUTPUT
+
+      - name: Get repository name
+        run: echo "${{ github.repository }}"
+
+      - name: Get server url
+        run: echo "${{ github.server_url }}"
+
+      - id: save-full-repository-url
+        name: Get full server url
+        run: echo "full-server-url=${{ github.server_url }}/${{ github.repository }}" >> $GITHUB_OUTPUT
+
   build:
     runs-on: windows-latest
+    needs: get-repository-info
     env:
       BuildScriptPath: .github/build/build.ps1
     steps:
@@ -26,23 +54,27 @@ jobs:
         dotnet-version: 6.0.x
 
     - name: Run PowerShell script
-      run: ${{env.BuildScriptPath}}
+      run: ${{ env.BuildScriptPath }} --BuildMetadata=True --Repository=${{ needs.get-repository-info.outputs.REPOSITORY_FULL_URL }} --Author=${{ needs.get-repository-info.outputs.REPOSITORY_AUTHOR }}
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.ARTIFACT_NAME }}
+        name: ${{ env.ARTIFACT_NAME_RAW }}
         path: ${{ env.BUILD_OUTPUT_FOLDER }}
-
 
   create-tag:
     if: ${{ inputs.releaseVersion != '' }}
     runs-on: ubuntu-latest
     needs: build
     outputs:
+      BUILD_VERSION: ${{ steps.save-version.outputs.version }}
       BUILD_TAG: ${{ steps.save-tag.outputs.tag }}
     steps:
       - uses: actions/checkout@v3
+
+      - id: save-version
+        name: Create version
+        run: echo "version=v${{ inputs.releaseVersion }}" >> $GITHUB_OUTPUT
 
       - id: save-tag
         name: Create tag
@@ -55,10 +87,46 @@ jobs:
           message: "Release ${{ steps.save-tag.outputs.tag }}"
           force_push_tag: true
 
+  build-artifacts:
+    if: ${{ inputs.releaseVersion != '' }}
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      FullPathOutputFolder: ${{ github.workspace }}/.github/build/build.output
+      RenamePackagesScriptPath: .github/build/rename_packages.ps1
+      MergeScriptPath: .github/build/merge_metadata_script.ps1
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.ARTIFACT_NAME_RAW }}
+          path: ${{ env.FullPathOutputFolder }}
+
+      - name: Detected packages
+        run: ls -l ${{ env.FullPathOutputFolder }}
+
+      - name: Run PowerShell rename packages script
+        shell: pwsh
+        run: ${{ env.RenamePackagesScriptPath }} -sourceDir ${{ env.BUILD_OUTPUT_FOLDER }} -releaseVersion ${{ inputs.releaseVersion }} -isPreRelese ${{ inputs.isPreRelease }}
+
+      - name: Run PowerShell merge meta files script
+        shell: pwsh
+        run: ${{ env.MergeScriptPath }} -sourceDir ${{ env.BUILD_OUTPUT_FOLDER }} -resultFileName ${{ env.METADATA_FILE_NAME }}
+
+      - name: Package directory after scripts
+        run: ls -l ${{ env.FullPathOutputFolder }}
+
+      - name: Upload artifact with new names
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.BUILD_OUTPUT_FOLDER }}
 
   create-release:
     runs-on: ubuntu-latest
-    needs: [build, create-tag]
+    needs: [create-tag, build-artifacts]
     env:
       ReleaseNote: "ReleaseNote.md"
       GithubToken: ${{ secrets.BUILDRELEASESECRET }}
@@ -77,6 +145,7 @@ jobs:
           name: ${{ needs.create-tag.outputs.BUILD_TAG }}
           tag: ${{ needs.create-tag.outputs.BUILD_TAG }}
           token: ${{ env.GithubToken }}
-          artifacts: ${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo
+          artifacts: "${{ env.BUILD_OUTPUT_FOLDER }}/*.ttalgo, ${{ env.BUILD_OUTPUT_FOLDER }}/${{ env.METADATA_FILE_NAME }}.json"
           bodyFile: ${{ env.ReleaseNote }}
+          prerelease: ${{ inputs.isPreRelease }}
           allowUpdates: true
