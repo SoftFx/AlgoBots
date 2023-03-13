@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "100YearPortfolioBot", "100Y
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoftFx.Common", "SoftFx.Common\SoftFx.Common.csproj", "{9F90C597-602E-448F-8DDC-F43BAD78E5ED}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TPtoAllNewPositionsInPercents", "TPtoAllNewPositionsInPercents\TPtoAllNewPositionsInPercents.csproj", "{B488D450-2605-4F6E-9E90-8CE085AE3D40}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{9F90C597-602E-448F-8DDC-F43BAD78E5ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F90C597-602E-448F-8DDC-F43BAD78E5ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F90C597-602E-448F-8DDC-F43BAD78E5ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B488D450-2605-4F6E-9E90-8CE085AE3D40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B488D450-2605-4F6E-9E90-8CE085AE3D40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B488D450-2605-4F6E-9E90-8CE085AE3D40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B488D450-2605-4F6E-9E90-8CE085AE3D40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
