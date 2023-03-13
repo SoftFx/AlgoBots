@@ -7,19 +7,21 @@ The bot emulates the TakeProfit for positions on Net account. Every time interva
 ## Bot logic
 For every Net position bot opens one or several opposite side Limits so that their bulk volume is the same as Net position. 
 Limit’s open price is calculated the next way:
+```
 For BuyLimit: 
 price = Position.Price * (1 + _symbolTp)
 For SellLimit:
 price = Position.Price * (1 - Min(_symbolTp, 0.9999)) // preventing negative price if tp >= 1.0
+```
 
-If Position.Volume > Symbol.MaxTradeVolume then LimitOpenPrice is calculated as VWAP price based on all limits by the symbol created by the bot according to the logic
-Recalculating and correction is done every RunIntervalInSeconds (3 sec by default). 
-Before every recalculation bot checks current orders and cancels invalid Limits (If the isolation is on, the bot checks only its own Limits).
-The next orders are detected as invalid: 
-1.	If there is no a position by the symbol on the account.
-2.	If a Limit order side is the same as the correspondent position side.
-3.	If the value _symbolTp was changed (Order comment is checked)
-4.	If Order Volume < _symbolMinVolume (defined in Bot Settings)
+Details:
+* If Position.Volume > Symbol.MaxTradeVolume then LimitOpenPrice is calculated as VWAP price based on all limits by the symbol created by the bot according to the logic
+* Recalculating and correction is done every RunIntervalInSeconds (3 sec by default). 
+* Before every recalculation bot checks current orders and cancels invalid Limits (If the isolation is on, the bot checks only its own Limits). The next orders are detected as invalid: 
+    *	If there is no a position by the symbol on the account.
+    *	If a Limit order side is the same as the correspondent position side.
+    *	If the value _symbolTp was changed (Order comment is checked)
+    *	If Order Volume < _symbolMinVolume (defined in Bot Settings)
 
 
 ## Config description (actual for version 1.3)
