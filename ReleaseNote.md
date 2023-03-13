@@ -1,5 +1,8 @@
 # Algo Bots v.1.1
 
+## Algo Api version
+* Algo Api version has been uploaded to v.1.5.2
+
 ## New bots
 
 * **ImportAccountStateBot** v1.2 has been added. This bot helps to integrate bots written on another programming languange to SoftFx Environment. Just write required trade state to csv file from python, r, mathlab and this bot will adjust orders and positions to required state. More info you can find [here](https://github.com/SoftFx/AlgoBots/tree/develop/ImportAccountStateBot)
