@@ -12,8 +12,7 @@ The MACD expert advisor is designed to use moving average convergence and diverg
 This will open up a trade once the signal line breaks through the MACD histogram and both are below (or above) the zero lines.
 
 * [MovingAverageBot](https://github.com/SoftFx/AlgoBots/tree/develop/MovingAverageBot)
-The Moving Average bot uses one Moving Average indicator to trade. If a candle crosses the Moving Average from below, the EA will enter a long position. 
-Vice Versa for the short position. If you enter a Padding in Pips, the bot will only open a buy position if the price is X pips above the Moving Average Line.
+The Moving Average bot uses one Moving Average indicator to trade. If a candle crosses the Moving Average from below, the EA will enter a long position. Vice Versa for the short position. If you enter a Padding in Pips, the bot will only open a buy position if the price is X pips above the Moving Average Line.
 
 * [TPtoAllNewPositionsInPercents](https://github.com/SoftFx/AlgoBots/tree/develop/TPtoAllNewPositionsInPercents)
 The bot emulates the TakeProfit for positions on Net account. Every time interval it checks the amount of positions and updates the limit orders set so that the Amount of position opened by a symbol is equivalent the amount of limit orders.
