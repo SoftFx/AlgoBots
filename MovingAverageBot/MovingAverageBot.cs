@@ -8,7 +8,8 @@ using TickTrader.Algo.Api.Math;
 namespace MovingAverageBot
 {
     [TradeBot(DisplayName = "MovingAverageBot", Category = "SoftFX Public", Version = "1.3",
-              Description = "The bot opens a trade when the price crosses the MA.")]
+              Description = "The Moving Average bot uses one Moving Average indicator to trade. If a candle crosses the Moving Average from below, the EA will enter a long position." +
+              "Vice Versa for the short position. If you enter a Padding in Pips, the bot will only open a buy position if the price is X pips above the Moving Average Line.")]
     public class MovingAverageBot : TradeBot
     {
         [Parameter(DisplayName = "MaximumRisk", DefaultValue = 0.02)]
