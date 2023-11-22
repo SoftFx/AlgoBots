@@ -6,12 +6,12 @@ using TickTrader.Algo.Api;
 
 namespace TPtoAllNewPositionsInPercents
 {
-    [TradeBot(Category = "SoftFX Public", DisplayName = "TPtoAllNewPositionsInPercents", Version = "1.3",
+    [TradeBot(Category = "SoftFX Public", DisplayName = "TPtoAllNewPositions", Version = "1.4",
               Description = "The bot emulates the TakeProfit for positions on Net account. Every time interval it checks the amount of positions and" +
                             " updates the limit orders set so that the Amount of position opened by a symbol is equivalent the amount of limit orders.")]
-    public class TPtoAllNewPositionsInPercents : SingleLoopBot<TPtoAllNewPositionsPercentsConfiguration>
+    public class TPtoAllNewPositions : SingleLoopBot<TPtoAllNewPositionsConfiguration>
     {
-        private const string ConfigDefaultFileName = "TPtoAllNewPositionsInPercents.tml";
+        private const string ConfigDefaultFileName = "TPtoAllNewPositions.tml";
 
         private LimitWatcher _limitWatcher;
 

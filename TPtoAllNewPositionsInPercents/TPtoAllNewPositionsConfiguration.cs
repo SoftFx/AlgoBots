@@ -7,7 +7,7 @@ using System.Text;
 
 namespace TPtoAllNewPositionsInPercents
 {
-    public class TPtoAllNewPositionsPercentsConfiguration : BotConfig
+    public class TPtoAllNewPositionsConfiguration : BotConfig
     {
         [Nett.TomlIgnore]
         public Dictionary<string, SymbolSetting> SymbolsSettingsDict { get; } = new Dictionary<string, SymbolSetting>();
@@ -15,18 +15,32 @@ namespace TPtoAllNewPositionsInPercents
         public Dictionary<string, string> SymbolsSettings { get; set; }
 
 
+        [Nett.TomlIgnore]
+        public HashSet<string> ExcludedSymbolsHash { get; } = new();
+
+        public List<string> ExcludedSymbols { get; set; }
+
+
         public int RunIntervalInSeconds { get; set; }
 
         public double DefaultMinVolume { get; set; }
 
-        public double DefaultTP { get; set; }
+
+        [Nett.TomlIgnore]
+        public PriceSetting DefaultTPSettings { get; set; }
+
+        public string DefaultTP { get; set; }
 
 
-        public TPtoAllNewPositionsPercentsConfiguration()
+        public int TpForCurrentPriceInPips { get; set; }
+
+
+        public TPtoAllNewPositionsConfiguration()
         {
             RunIntervalInSeconds = 3;
-            DefaultTP = SymbolSetting.DefaultTP;
+            DefaultTP = PriceSetting.DefaultTP.ToString();
             DefaultMinVolume = SymbolSetting.DefaultMinVolume;
+            TpForCurrentPriceInPips = 5;
 
             SymbolsSettings = new Dictionary<string, string>
             {
@@ -34,20 +48,24 @@ namespace TPtoAllNewPositionsInPercents
                 {"GBPJPY", "MinVolume=0.05; TP=0.10" },
                 {"AUDUSD", "TP=0.20; MinVolume=0.1;" },
                 {"EURJPY", "TP=0.10;" },
-                {"AUDNZD", "TP=0.05" },
+                {"AUDNZD", "TP=100p" },
                 {"GBPAUD", "MinVolume=0.1; TP=0.15;" },
                 {"GBPUSD", "TP=0.10; MinVolume=0.3" },
-                {"NZDUSD", "TP= 0.10; MinVolume = 0.22" },
+                {"NZDUSD", "TP=100pips; MinVolume = 0.22" },
                 {"USDCNH", "TP=0.10; MINVOLUME=0.1" },
                 {"EURCHF", "tp=0.03; minvolume=0.03" },
                 {"EURUSD", "MinVolume=0.1;" },
                 {"HKDJPY", "MinVolume=0.2" },
             };
+
+            ExcludedSymbols = new List<string>() { "BTCUSD" };
         }
 
         public override void Init()
         {
-            if (DefaultTP < 0.0)
+            DefaultTPSettings = new PriceSetting(DefaultTP);
+
+            if (DefaultTPSettings.Value < 0.0)
                 throw new ValidationException($"{nameof(DefaultTP)} must be greater or equal than 0");
 
             if (DefaultMinVolume <= 0.0)
@@ -56,6 +74,9 @@ namespace TPtoAllNewPositionsInPercents
             if (RunIntervalInSeconds <= 0)
                 throw new ValidationException($"{nameof(RunIntervalInSeconds)} must be greater than 0");
 
+            if (TpForCurrentPriceInPips < 0)
+                throw new ValidationException($"{nameof(TpForCurrentPriceInPips)} must be greater or equal than 0");
+
             foreach (var pair in SymbolsSettings)
                 SymbolsSettingsDict.Add(pair.Key, new SymbolSetting(pair));
 
@@ -63,9 +84,16 @@ namespace TPtoAllNewPositionsInPercents
         }
 
 
-        public double TryGetTP(string symbol) => SymbolsSettingsDict.TryGetValue(symbol, out var settings) ? settings.TakeProfit : DefaultTP;
+        public bool TryGetTP(string symbol, out PriceSetting tp)
+        {
+            tp = SymbolsSettingsDict.TryGetValue(symbol, out var settings) ? settings.TakeProfit : DefaultTPSettings;
 
-        public double TryGetMinVolume(string symbol) => SymbolsSettingsDict.TryGetValue(symbol, out var settings) ? settings.MinVolume : DefaultMinVolume;
+            return ExcludedSymbolsHash.Contains(symbol);
+        }
+
+        public double GetMinVolume(string symbol) => SymbolsSettingsDict.TryGetValue(symbol, out var settings) ? settings.MinVolume : DefaultMinVolume;
+
+        public bool IsExcludeSymbol(string symbol) => ExcludedSymbolsHash.Contains(symbol);
 
 
         private void ValidateSymbolsSettings()
@@ -79,7 +107,7 @@ namespace TPtoAllNewPositionsInPercents
                 var tp = pair.Value.TakeProfit;
                 var volume = pair.Value.MinVolume;
 
-                if (tp < 0.0)
+                if (tp.Value < 0.0)
                     error.Append($"TP={tp} ");
 
                 if (volume <= 0.0)
@@ -103,17 +131,72 @@ namespace TPtoAllNewPositionsInPercents
                    .AppendLine($"{nameof(RunIntervalInSeconds)} = {RunIntervalInSeconds};")
                    .AppendLine($"{nameof(DefaultTP)} = {DefaultTP};")
                    .AppendLine($"{nameof(DefaultMinVolume)} = {DefaultMinVolume};")
+                   .AppendLine($"{nameof(TpForCurrentPriceInPips)} = {TpForCurrentPriceInPips};")
                    .AppendLine()
                    .AppendLine($"[{nameof(SymbolsSettings)}]")
-                   .Append($"{string.Join($"{Environment.NewLine}", SymbolsSettingsDict.Values.Select(u => u.ToString()))}");
+                   .Append($"{string.Join($"{Environment.NewLine}", SymbolsSettingsDict.Values.Select(u => u.ToString()))}")
+                   .AppendLine()
+                   .AppendLine()
+                   .AppendLine($"[{nameof(ExcludedSymbols)}]")
+                   .Append($"{string.Join(',', ExcludedSymbols.Select(u => u.ToString()))}");
 
             return builder.ToString();
         }
 
 
-        public class SymbolSetting
+        public enum PriceType
+        {
+            Percents,
+            Pips,
+        }
+
+
+        public sealed class PriceSetting
         {
             public const double DefaultTP = 0.03;
+
+            public static PriceSetting Default { get; } = new PriceSetting(DefaultTP);
+
+
+            public PriceType Type { get; }
+
+            public double Value { get; }
+
+
+            private PriceSetting(double value)
+            {
+                Type = PriceType.Percents;
+                Value = value;
+            }
+
+            internal PriceSetting(string str)
+            {
+                Type = IsPips(ref str, "p") || IsPips(ref str, "pips") ? PriceType.Pips : PriceType.Percents;
+
+                if (Parser.TryGetDouble(str, out var value))
+                    Value = value;
+                else
+                    throw new ValidationException($"Cannot convert value to percent or pips format: {str}");
+            }
+
+
+            private static bool IsPips(ref string str, string pattern)
+            {
+                var isPips = str.EndsWith(pattern);
+
+                if (isPips)
+                    str = str[..^pattern.Length];
+
+                return isPips;
+            }
+
+
+            public override string ToString() => $"{Value}{(Type == PriceType.Pips ? "pips" : "")}";
+        }
+
+
+        public sealed class SymbolSetting
+        {
             public const double DefaultMinVolume = 1.0;
 
             private readonly static char[] _splitters = new char[] { ';', '=' };
@@ -121,9 +204,9 @@ namespace TPtoAllNewPositionsInPercents
             private readonly string _symbol;
 
 
-            public double TakeProfit { get; set; } = DefaultTP;
+            public PriceSetting TakeProfit { get; private set; } = PriceSetting.Default;
 
-            public double MinVolume { get; set; } = DefaultMinVolume;
+            public double MinVolume { get; private set; } = DefaultMinVolume;
 
 
             public SymbolSetting() { }
@@ -139,15 +222,16 @@ namespace TPtoAllNewPositionsInPercents
 
                 for (int i = 0; i < parts.Count; i += 2)
                 {
-                    if (!Parser.TryGetDouble(parts[i + 1], out double value))
-                        throw new ValidationException($"Cannot convert {parts[i + 1]} to double. Line: {_symbol} {pair.Value}");
+                    var rawValue = parts[i + 1];
 
                     switch (parts[i])
                     {
                         case "tp":
-                            TakeProfit = value;
+                            TakeProfit = new PriceSetting(rawValue);
                             break;
                         case "minvolume":
+                            if (!Parser.TryGetDouble(rawValue, out double value))
+                                throw new ValidationException($"Cannot convert {rawValue} to double. Line: {_symbol} {pair.Value}");
                             MinVolume = value;
                             break;
                         default:

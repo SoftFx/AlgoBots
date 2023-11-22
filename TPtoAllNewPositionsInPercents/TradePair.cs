@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
+using static TPtoAllNewPositionsInPercents.TPtoAllNewPositionsConfiguration;
 
 namespace TPtoAllNewPositionsInPercents
 {
@@ -10,26 +11,27 @@ namespace TPtoAllNewPositionsInPercents
     {
         private const double MinCoef = 0.9999;
 
-        private readonly TPtoAllNewPositionsInPercents _bot;
+        private readonly TPtoAllNewPositions _bot;
 
-        private readonly double _tpPercent, _minLimitVolume;
-        private readonly string _orderComment;
-        private readonly string _symbol;
+        private readonly PriceSetting _tpSettings;
+        private readonly double _minLimitVolume;
+        private readonly string _orderComment, _symbol;
+
 
         private List<Order> OrdersChain => _bot.Account.OrdersBySymbol(_symbol).Where(u => u.Comment.StartsWith(_bot.CommentPrefix)).ToList();
 
         private NetPosition Position => _bot.Account.NetPositions.FirstOrDefault(u => u.Symbol == _symbol);
 
 
-        public TradePair(TPtoAllNewPositionsInPercents bot, string symbol)
+        public TradePair(TPtoAllNewPositions bot, string symbol)
         {
             _bot = bot;
             _symbol = symbol;
 
-            _tpPercent = _bot.Config.TryGetTP(symbol);
-            _minLimitVolume = _bot.Config.TryGetMinVolume(symbol);
+            _bot.Config.TryGetTP(symbol, out _tpSettings);
+            _minLimitVolume = _bot.Config.GetMinVolume(symbol);
 
-            _orderComment = $"{_bot.CommentPrefix}{_tpPercent}";
+            _orderComment = $"{_bot.CommentPrefix}{_tpSettings}";
         }
 
 
@@ -101,10 +103,32 @@ namespace TPtoAllNewPositionsInPercents
 
         private double GetNewLimitPrice(out double limitVolume)
         {
-            var limitPrice = GetVWAPLimitPrice(out limitVolume);
             var position = Position;
 
-            return (position.Volume * GetNewTPPrice(position.Price) - limitVolume * limitPrice) / (position.Volume - limitVolume);
+            if (_tpSettings.Type == PriceType.Percents)
+            {
+                var limitPrice = GetVWAPLimitPrice(out limitVolume);
+
+                return (position.Volume * GetNewPercentTPPrice(position.Price) - limitVolume * limitPrice) / (position.Volume - limitVolume);
+            }
+
+            limitVolume = OrdersChain.Sum(o => o.RemainingVolume);
+
+            var closeTpSymbol = _bot.Config.TpForCurrentPriceInPips * _bot.Symbol.Point;
+            var tpSymbol = _tpSettings.Value * _bot.Symbol.Point;
+
+            if (position.Side.IsBuy())
+            {
+                var expectedTp = position.Price + tpSymbol;
+
+                return expectedTp < _bot.Bid ? _bot.Bid + closeTpSymbol : expectedTp;
+            }
+            else
+            {
+                var expectedTp = position.Price - tpSymbol;
+
+                return expectedTp > _bot.Ask ? _bot.Ask - closeTpSymbol : expectedTp;
+            }
         }
 
         private double GetVWAPLimitPrice(out double limitVolume)
@@ -121,9 +145,9 @@ namespace TPtoAllNewPositionsInPercents
             return limitVolume.E(0.0) ? 0.0 : ans / limitVolume;
         }
 
-        private double GetNewTPPrice(double price)
+        private double GetNewPercentTPPrice(double price)
         {
-            return price * (Position.Side.IsSell() ? 1 - Math.Min(_tpPercent, MinCoef) : 1 + _tpPercent);
+            return price * (Position.Side.IsSell() ? 1 - Math.Min(_tpSettings.Value, MinCoef) : 1 + _tpSettings.Value);
         }
     }
 }

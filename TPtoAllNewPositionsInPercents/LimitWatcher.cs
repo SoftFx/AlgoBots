@@ -6,16 +6,16 @@ namespace TPtoAllNewPositionsInPercents
 {
     internal sealed class LimitWatcher
     {
-        private readonly Dictionary<string, TradePair> _pairs = new Dictionary<string, TradePair>();
-        private readonly TPtoAllNewPositionsInPercents _bot;
+        private readonly Dictionary<string, TradePair> _pairs = new();
+        private readonly TPtoAllNewPositions _bot;
 
 
-        public LimitWatcher(TPtoAllNewPositionsInPercents bot)
+        public LimitWatcher(TPtoAllNewPositions bot)
         {
             _bot = bot;
 
             UploadPosition();
-            CloseOldPositions(); //Closing a chain with a closed position
+            CloseOldOrders(); //Closing a chain with a closed position
         }
 
 
@@ -35,7 +35,7 @@ namespace TPtoAllNewPositionsInPercents
         {
             var symbol = position.Symbol;
 
-            if (!_pairs.ContainsKey(symbol))
+            if (!_pairs.ContainsKey(symbol) && !_bot.Config.IsExcludeSymbol(symbol))
                 _pairs.Add(symbol, new TradePair(_bot, symbol));
         }
 
@@ -43,14 +43,11 @@ namespace TPtoAllNewPositionsInPercents
         {
             var symbol = position.Symbol;
 
-            if (_pairs.TryGetValue(symbol, out TradePair pair))
-            {
-                _pairs.Remove(symbol);
+            if (_pairs.TryGetValue(symbol, out TradePair pair) && _pairs.Remove(symbol))
                 pair.RemoveChain();
-            }
         }
 
-        private void CloseOldPositions() => _bot.Account.Orders.Where(u => u.Comment.StartsWith(_bot.CommentPrefix) && !_pairs.ContainsKey(u.Symbol)).ToList()
-                                                               .ForEach(u => _bot.CancelOrder(u.Id));
+        private void CloseOldOrders() => _bot.Account.Orders.Where(u => u.Comment.StartsWith(_bot.CommentPrefix) && !_pairs.ContainsKey(u.Symbol)).ToList()
+                                                            .ForEach(u => _bot.CancelOrder(u.Id));
     }
 }
