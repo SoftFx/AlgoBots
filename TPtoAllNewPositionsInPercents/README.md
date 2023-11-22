@@ -8,10 +8,21 @@ The bot emulates the TakeProfit for positions on Net account. Every time interva
 For every Net position bot opens one or several opposite side Limits so that their bulk volume is the same as Net position. 
 Limit’s open price is calculated the next way:
 ```
-For BuyLimit: 
-price = Position.Price * (1 + _symbolTp)
-For SellLimit:
-price = Position.Price * (1 - Min(_symbolTp, 0.9999)) // preventing negative price if tp >= 1.0
+For price in precents
+    For BuyLimit:
+    price = Position.Price * (1 + _symbolTp)
+    For SellLimit:
+    price = Position.Price * (1 - Min(_symbolTp, 0.9999)) // preventing negative price if tp >= 1.0
+
+For price in pips
+    For BuyLimit:
+    price = position.Price + _symbolTp * Point
+    if (price < Bid)
+        price = Bid + TpForCurrentPriceInPips * Point
+    For SellLimit:
+    price = position.Price - _symbolTp * Point
+    uf (prive > Ask)
+        price = Ask - TpForCurrentPriceInPips * Point
 ```
 
 Details:
@@ -24,27 +35,30 @@ Details:
     *	If Order Volume < _symbolMinVolume (defined in Bot Settings)
 
 
-## Config description (actual for version 1.3)
+## Config description (actual for version 1.4)
 
 ### Config sample
 ```
+ExcludeSymbols = ["BTCUSD"]
 RunIntervalInSeconds = 3
-DefaultTP = 0.03
-DefaultMinVolume = 0.1
+DefaultMinVolume = 1.0
+DefaultTP = "0.03"
+TpForCurrentPriceInPips = 5
 
 [SymbolsSettings]
 USDRUB = "TP=0.10; MinVolume=0.1"
 GBPJPY = "MinVolume=0.05; TP=0.10"
 AUDUSD = "TP=0.20; MinVolume=0.1;"
 EURJPY = "TP=0.10;"
-AUDNZD = "TP=0.05"
+AUDNZD = "TP=100p"
 GBPAUD = "MinVolume=0.1; TP=0.15;"
 GBPUSD = "TP=0.10; MinVolume=0.3"
-NZDUSD = "TP= 0.10; MinVolume = 0.22"
+NZDUSD = "TP=100pips; MinVolume = 0.22"
 USDCNH = "TP=0.10; MINVOLUME=0.1"
 EURCHF = "tp=0.03; minvolume=0.03"
 EURUSD = "MinVolume=0.1;"
 HKDJPY = "MinVolume=0.2"
+
 ```
 
 ## Parameters
@@ -60,3 +74,9 @@ MinVolume value to be applied if the symbol is not found in the dictionary.
 
 ### SymbolsSettings
 This is a dictionary, where the key is the name of the symbol, and the value this is a string in the format: *TP=value; MinVolume=value*. Where TP is profit in range [0..+inf), and MinVolume the min limit volume is greater than 0.
+
+### ExcludedSymbols
+This is a list of symbols witch should be ignored for the bot.
+
+### TpForCurrentPriceInPips
+This is value should be applied to current price if current price is better than calculated expected TP (available only for TP in pips)
