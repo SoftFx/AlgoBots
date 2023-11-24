@@ -40,7 +40,7 @@ namespace TPtoAllNewPositionsInPercents
             RunIntervalInSeconds = 3;
             DefaultTP = PriceSetting.DefaultTP.ToString();
             DefaultMinVolume = SymbolSetting.DefaultMinVolume;
-            TpForCurrentPriceInPips = 5;
+            TpForCurrentPriceInPips = 10;
 
             SymbolsSettings = new Dictionary<string, string>
             {
@@ -78,7 +78,7 @@ namespace TPtoAllNewPositionsInPercents
                 throw new ValidationException($"{nameof(TpForCurrentPriceInPips)} must be greater or equal than 0");
 
             foreach (var pair in SymbolsSettings)
-                SymbolsSettingsDict.Add(pair.Key, new SymbolSetting(pair));
+                SymbolsSettingsDict.Add(pair.Key, new SymbolSetting(pair, DefaultMinVolume));
 
             ValidateSymbolsSettings();
         }
@@ -134,8 +134,7 @@ namespace TPtoAllNewPositionsInPercents
                    .AppendLine($"{nameof(TpForCurrentPriceInPips)} = {TpForCurrentPriceInPips};")
                    .AppendLine()
                    .AppendLine($"[{nameof(SymbolsSettings)}]")
-                   .Append($"{string.Join($"{Environment.NewLine}", SymbolsSettingsDict.Values.Select(u => u.ToString()))}")
-                   .AppendLine()
+                   .AppendLine($"{string.Join($"{Environment.NewLine}", SymbolsSettingsDict.Values.Select(u => u.ToString()))}")
                    .AppendLine()
                    .AppendLine($"[{nameof(ExcludedSymbols)}]")
                    .Append($"{string.Join(',', ExcludedSymbols.Select(u => u.ToString()))}");
@@ -211,9 +210,11 @@ namespace TPtoAllNewPositionsInPercents
 
             public SymbolSetting() { }
 
-            public SymbolSetting(KeyValuePair<string, string> pair)
+            public SymbolSetting(KeyValuePair<string, string> pair, double defaultVolume)
             {
                 _symbol = pair.Key;
+
+                MinVolume = defaultVolume;
 
                 var parts = pair.Value.ToLower().Split(_splitters, StringSplitOptions.RemoveEmptyEntries).Select(u => u.Trim()).ToList();
 

@@ -22,6 +22,8 @@ namespace TPtoAllNewPositionsInPercents
 
         private NetPosition Position => _bot.Account.NetPositions.FirstOrDefault(u => u.Symbol == _symbol);
 
+        private double OpenedChainVolume => OrdersChain.Sum(o => o.RemainingVolume);
+
 
         public TradePair(TPtoAllNewPositions bot, string symbol)
         {
@@ -68,6 +70,16 @@ namespace TPtoAllNewPositionsInPercents
                 ReduceTotalLimitVolume(openedLimitsVolume);
         }
 
+
+        public void FullChainRecalculation()
+        {
+            if (OpenedChainVolume != Position.Volume)
+            {
+                RemoveChain();
+                RecalculateChain();
+            }
+        }
+
         public void RemoveChain() => OrdersChain.ForEach(o => _bot.CancelOrder(o.Id));
 
 
@@ -112,7 +124,7 @@ namespace TPtoAllNewPositionsInPercents
                 return (position.Volume * GetNewPercentTPPrice(position.Price) - limitVolume * limitPrice) / (position.Volume - limitVolume);
             }
 
-            limitVolume = OrdersChain.Sum(o => o.RemainingVolume);
+            limitVolume = OpenedChainVolume;
 
             var closeTpSymbol = _bot.Config.TpForCurrentPriceInPips * _bot.Symbol.Point;
             var tpSymbol = _tpSettings.Value * _bot.Symbol.Point;

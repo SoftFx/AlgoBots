@@ -22,7 +22,7 @@ namespace TPtoAllNewPositionsInPercents
         public void UploadPosition()
         {
             _bot.Account.NetPositions.ToList().ForEach(AddTradePair); //adding chains for new positions
-            _pairs.Values.ToList().ForEach(u => u.RecalculateChain());
+            _pairs.Values.ToList().ForEach(u => u.FullChainRecalculation());
         }
 
         public void UploadPosition(NetPositionModifiedEventArgs obj)
