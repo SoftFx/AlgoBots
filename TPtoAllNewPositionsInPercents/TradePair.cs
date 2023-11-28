@@ -22,6 +22,9 @@ namespace TPtoAllNewPositionsInPercents
 
         private NetPosition Position => _bot.Account.NetPositions.FirstOrDefault(u => u.Symbol == _symbol);
 
+        private Symbol Symbol => _bot.Symbols[_symbol];
+
+
         private double OpenedChainVolume => OrdersChain.Sum(o => o.RemainingVolume);
 
 
@@ -133,13 +136,13 @@ namespace TPtoAllNewPositionsInPercents
             {
                 var expectedTp = position.Price + tpSymbol;
 
-                return expectedTp < _bot.Bid ? _bot.Bid + closeTpSymbol : expectedTp;
+                return expectedTp < Symbol.Bid ? Symbol.Bid + closeTpSymbol : expectedTp;
             }
             else
             {
                 var expectedTp = position.Price - tpSymbol;
 
-                return expectedTp > _bot.Ask ? _bot.Ask - closeTpSymbol : expectedTp;
+                return expectedTp > Symbol.Ask ? Symbol.Ask - closeTpSymbol : expectedTp;
             }
         }
 
