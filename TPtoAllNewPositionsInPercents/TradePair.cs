@@ -129,8 +129,8 @@ namespace TPtoAllNewPositionsInPercents
 
             limitVolume = OpenedChainVolume;
 
-            var closeTpSymbol = _bot.Config.TpForCurrentPriceInPips * _bot.Symbol.Point;
-            var tpSymbol = _tpSettings.Value * _bot.Symbol.Point;
+            var closeTpSymbol = _bot.Config.TpForCurrentPriceInPips * Symbol.Point;
+            var tpSymbol = _tpSettings.Value * Symbol.Point;
 
             if (position.Side.IsBuy())
             {

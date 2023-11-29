@@ -58,7 +58,7 @@ namespace TPtoAllNewPositionsInPercents
                 {"HKDJPY", "MinVolume=0.2" },
             };
 
-            ExcludedSymbols = new List<string>() { "BTCUSD" };
+            ExcludedSymbols = new List<string>();
         }
 
         public override void Init()
@@ -79,6 +79,9 @@ namespace TPtoAllNewPositionsInPercents
 
             foreach (var pair in SymbolsSettings)
                 SymbolsSettingsDict.Add(pair.Key, new SymbolSetting(pair, DefaultMinVolume));
+
+            foreach (var symbol in ExcludedSymbols)
+                ExcludedSymbolsHash.Add(symbol);
 
             ValidateSymbolsSettings();
         }
