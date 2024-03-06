@@ -35,7 +35,7 @@ Details:
     *	If Order Volume < _symbolMinVolume (defined in Bot Settings)
 
 
-## Config description (actual for version 1.4)
+## Config description (actual for version 1.5)
 
 ### Config sample
 ```
@@ -43,7 +43,7 @@ ExcludeSymbols = ["BTCUSD"]
 RunIntervalInSeconds = 3
 DefaultMinVolume = 1.0
 DefaultTP = "0.03"
-TpForCurrentPriceInPips = 5
+TpForCurrentPrice = 10p
 
 [SymbolsSettings]
 USDRUB = "TP=0.10; MinVolume=0.1"
@@ -78,5 +78,5 @@ This is a dictionary, where the key is the name of the symbol, and the value thi
 ### ExcludedSymbols
 This is a list of symbols witch should be ignored for the bot.
 
-### TpForCurrentPriceInPips
-This is value should be applied to current price if current price is better than calculated expected TP (available only for TP in pips)
+### TpForCurrentPrice
+This is value should be applied to current price if current price is better than calculated expected TP. It supports pips and percents.
