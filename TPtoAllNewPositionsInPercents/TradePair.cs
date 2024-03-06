@@ -129,20 +129,29 @@ namespace TPtoAllNewPositionsInPercents
 
             limitVolume = OpenedChainVolume;
 
-            var closeTpSymbol = _bot.Config.TpForCurrentPriceInPips * Symbol.Point;
             var tpSymbol = _tpSettings.Value * Symbol.Point;
+
+            double GetShiftedTp(double price)
+            {
+                var shiftedSetting = _bot.Config.TpForCurrentPriceSetting;
+
+                if (shiftedSetting.Type == PriceType.Pips)
+                    return shiftedSetting.Value * Symbol.Point;
+                else
+                    return price / 100.0 * shiftedSetting.Value;
+            }
 
             if (position.Side.IsBuy())
             {
                 var expectedTp = position.Price + tpSymbol;
 
-                return expectedTp < Symbol.Bid ? Symbol.Bid + closeTpSymbol : expectedTp;
+                return expectedTp < Symbol.Bid ? Symbol.Bid + GetShiftedTp(Symbol.Bid) : expectedTp;
             }
             else
             {
                 var expectedTp = position.Price - tpSymbol;
 
-                return expectedTp > Symbol.Ask ? Symbol.Ask - closeTpSymbol : expectedTp;
+                return expectedTp > Symbol.Ask ? Symbol.Ask - GetShiftedTp(Symbol.Ask) : expectedTp;
             }
         }
 

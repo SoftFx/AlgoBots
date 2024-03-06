@@ -32,7 +32,10 @@ namespace TPtoAllNewPositionsInPercents
         public string DefaultTP { get; set; }
 
 
-        public int TpForCurrentPriceInPips { get; set; }
+        public string TpForCurrentPrice { get; set; }
+
+        [Nett.TomlIgnore]
+        public PriceSetting TpForCurrentPriceSetting { get; set; }
 
 
         public TPtoAllNewPositionsConfiguration()
@@ -40,7 +43,7 @@ namespace TPtoAllNewPositionsInPercents
             RunIntervalInSeconds = 3;
             DefaultTP = PriceSetting.DefaultTP.ToString();
             DefaultMinVolume = SymbolSetting.DefaultMinVolume;
-            TpForCurrentPriceInPips = 10;
+            TpForCurrentPrice = "10";
 
             SymbolsSettings = new Dictionary<string, string>
             {
@@ -64,6 +67,7 @@ namespace TPtoAllNewPositionsInPercents
         public override void Init()
         {
             DefaultTPSettings = new PriceSetting(DefaultTP);
+            TpForCurrentPriceSetting = new PriceSetting(TpForCurrentPrice);
 
             if (DefaultTPSettings.Value < 0.0)
                 throw new ValidationException($"{nameof(DefaultTP)} must be greater or equal than 0");
@@ -74,8 +78,8 @@ namespace TPtoAllNewPositionsInPercents
             if (RunIntervalInSeconds <= 0)
                 throw new ValidationException($"{nameof(RunIntervalInSeconds)} must be greater than 0");
 
-            if (TpForCurrentPriceInPips < 0)
-                throw new ValidationException($"{nameof(TpForCurrentPriceInPips)} must be greater or equal than 0");
+            if (TpForCurrentPriceSetting.Value < 0.0)
+                throw new ValidationException($"{nameof(TpForCurrentPriceSetting.Value)} must be greater or equal than 0");
 
             foreach (var pair in SymbolsSettings)
                 SymbolsSettingsDict.Add(pair.Key, new SymbolSetting(pair, DefaultMinVolume));
@@ -134,7 +138,7 @@ namespace TPtoAllNewPositionsInPercents
                    .AppendLine($"{nameof(RunIntervalInSeconds)} = {RunIntervalInSeconds};")
                    .AppendLine($"{nameof(DefaultTP)} = {DefaultTP};")
                    .AppendLine($"{nameof(DefaultMinVolume)} = {DefaultMinVolume};")
-                   .AppendLine($"{nameof(TpForCurrentPriceInPips)} = {TpForCurrentPriceInPips};")
+                   .AppendLine($"{nameof(TpForCurrentPrice)} = {TpForCurrentPrice};")
                    .AppendLine()
                    .AppendLine($"[{nameof(SymbolsSettings)}]")
                    .AppendLine($"{string.Join($"{Environment.NewLine}", SymbolsSettingsDict.Values.Select(u => u.ToString()))}")
